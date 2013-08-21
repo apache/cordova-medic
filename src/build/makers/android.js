@@ -9,7 +9,7 @@ var shell        = require('shelljs'),
 
 module.exports = function(output, sha, devices, entry_point, couchdb_host, callback) {
     function log(msg) {
-        console.log('[ANDROID] ' + msg + ' (sha: ' + sha.substr(0,7) + ')');
+        console.log('[ANDROID] ' + msg + ' (sha: ' + sha + ')');
     }
       try {
           // make sure android app got created first.

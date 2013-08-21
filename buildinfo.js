@@ -38,10 +38,9 @@ module.exports=function saveBuildInfo(platform,branch,callback) {
             console.error('[COUCH ERROR] Saving doc with id ' + doc_id);
             callback(true, "");
         } else {
-            var testtag=body.rev
+            var testtag=doc_id;
             callback(false,testtag);
         }
     });
 }
-// fs.writeFileSync('buildinfo.json',JSON.stringify(buildinfo), 'utf-8');
 
