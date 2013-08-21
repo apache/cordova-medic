@@ -111,7 +111,11 @@ limitations under the License.
 
         reportRunnerResults: function (runner) {
             var p = device.platform.toLowerCase();
-
+            if(!(jasmine.runnerResults.failed)) {
+                console.log('[[[ TEST OK ]]]');
+            } else {
+                console.log('[[[ TEST FAILED ]]]');
+            }
             this.postTests({
                 mobilespec:jasmine.runnerResults,
                 sha:library_sha,

@@ -35,6 +35,13 @@ function kill(process, buf, sha, device_id) {
         process.kill();
         failures=true;
         return true;
+    } else if (buf.indexOf('[[[ TEST OK ]]]') > -1) {
+        process.kill();
+        return true;
+    } else if (buf.indexOf('[[[ TEST FAILED ]]]') > -1) {
+        process.kill();
+        failures=true;
+        return true;
     }
     return false;
 }

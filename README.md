@@ -57,6 +57,10 @@ The actual tests are run by slaves that are controlled by the master. The buildb
 Slaves that run tests on devices can only run one test at a time.
 The common slave can run multiple tests at once.
 
+At the start of each test run, the collection of components (git repositories) and the checked out SHA for each is collected into a document and written to the couchDB in test_details. 
+The DB ref from this document is used as the SHA for the test and is what is recorded in mobilespec_results or build_errors
+
+The various test runners are configured to report a fail/pass by device and the buildbot display will report FAIL if any test on any device fails. 
 
 #Current Test Configuration
 - three slaves are configured (Android, iOS and common) Android and iOS wil only run a single test at a time.

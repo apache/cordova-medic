@@ -14,9 +14,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-var n     = require('ncallbacks'),
-    shell = require('shelljs'),
+var shell = require('shelljs'),
     cp    = require('child_process');
+
+function nCallbacks(count, callback) {
+    var n = count;
+    var failed = false;
+    return function (err) {
+        if(!!err) failed=true;
+
+        if (n < 0) callback('called too many times')
+
+        --n
+
+        if (n == 0) callback(failed)
+    }
+}
 
 module.exports = function deploy(sha, devices, path, id, callback) {
     function log(msg) {
@@ -29,8 +42,6 @@ module.exports = function deploy(sha, devices, path, id, callback) {
     var activity='.mobilespec';
     var package='org.apache.mobilespec';
     var component = package+'/'+activity;
-log('project id='+id);
-log('start component='+component);
     var count = 0;
     if (devices === undefined || !devices) done();
     else {
@@ -39,7 +50,7 @@ log('start component='+component);
         if (count === 0) done();
         else {
             log('Target: ' + count + ' Android(s).');
-            var end = n(count, callback);
+            var end = nCallbacks(count, callback);
             for (var device in devices) if (devices.hasOwnProperty(device)) (function(d) {
                 var cmd = 'adb -s ' + d + ' uninstall ' + id;
                 var uninstall = shell.exec(cmd, {silent:true,async:true},function(code, uninstall_output) {
@@ -48,18 +59,15 @@ log('start component='+component);
                     cmd = 'adb -s ' + d + ' install -r ' + path;
                     var install = shell.exec(cmd, {silent:true,async:true},function(code, install_output) {
                         if (code > 0) {
-log('cmd = '+cmd);
                             log('Error installing on device ' + d);
-                            end();
+                            end(true);
                         } else {
                             log('Running on device ' + d);
                             cmd = 'adb -s ' + d + ' shell am start -n ' +component; // id + '/' + id + '.cordovaExample';
                             var deploy = shell.exec(cmd, {silent:true,async:true},function(code, run_output) {
                                 if (code > 0) {
                                     log('Error launching mobile-spec on device ' + d + ', continuing.');
-log('cmd = '+cmd);
-log('code= '+code);
-                                     end();
+                                     end(true);
                                 } else {
                                     log('Mobile-spec launched on device ' + d);
                                     // Clear out logcat buffer for specific device
@@ -72,7 +80,7 @@ log('code= '+code);
                                         log('Mobile-spec timed out on ' + d + ', continuing.');
                                         // TODO: write out an error if it times out
                                         //error_writer('android', sha, 
-                                        end();
+                                        end(true);
                                     }, 1000 * 60 * 5);
 
                                     // >>> DONE <<< gets logged when mobile-spec finished everything
@@ -83,7 +91,12 @@ log('code= '+code);
                                             log('Mobile-spec finished on ' + d);
                                             clearTimeout(timer);
                                             logcat.kill();
-                                            end();
+                                            end(false);
+                                        } else if (buf.indexOf('[[[ TEST FAILED ]]]') > -1) {
+                                            log('Mobile-spec finished with failure on ' + d);
+                                            clearTimeout(timer);
+                                            logcat.kill();
+                                            end(true);
                                         }
                                     });
                                 }
