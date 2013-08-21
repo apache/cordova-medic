@@ -42,13 +42,15 @@ function kill(process, buf, sha, device_id) {
         process.kill();
         failures=true;
         return true;
+    } else if (buf.indexOf('Test Results URL') >-1) {
+        console.log(buf);
     }
     return false;
 }
 
 function run_through(sha, devices, bundlePath, bundleId, callback) {
     function log(msg) {
-        console.log('[IOS] [DEPLOY] ' + msg + ' (' + sha.substr(0,7) + ')');
+        console.log('[IOS] [DEPLOY] ' + msg + ' (' + sha + ')');
     }
     var d = devices.shift();
     if (d) {

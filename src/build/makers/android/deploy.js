@@ -97,6 +97,8 @@ module.exports = function deploy(sha, devices, path, id, callback) {
                                             clearTimeout(timer);
                                             logcat.kill();
                                             end(true);
+                                        } else if(buf.indexOf('Test Results URL')>-1) {
+                                            console.log(buf);
                                         }
                                     });
                                 }
