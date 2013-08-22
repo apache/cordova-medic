@@ -135,6 +135,11 @@ limitations under the License.
                     if (xhr.status==201) {
                         // HTTP 201 Created
                         // we added the doc, hooray
+                        if(!(jasmine.runnerResults.failed)) {
+                            console.log('[[[ TEST OK ]]]');
+                        } else {
+                            console.log('[[[ TEST FAILED ]]]');
+                        }
                         console.log('>>> DONE <<<');
                         if (blackberry && blackberry.app && blackberry.app.exit) blackberry.app.exit();
                     } else if (xhr.status == 409) {
