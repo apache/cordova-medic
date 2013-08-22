@@ -24,6 +24,7 @@ var fruitstrap = path.join(root, 'node_modules', 'fruitstrap', 'fruitstrap');
 // current fruitstrap dependency has two binaries, uninstall exists under the "listdevices" one
 var listdevices = path.join(root, 'node_modules', 'fruitstrap', 'listdevices');
 var failures=false;
+var logged_url=false;
 
 function kill(process, buf, sha, device_id) {
     if (buf.indexOf('>>> DONE <<<') > -1) {
@@ -35,15 +36,19 @@ function kill(process, buf, sha, device_id) {
         process.kill();
         failures=true;
         return true;
-    } else if (buf.indexOf('[[[ TEST OK ]]]') > -1) {
-        process.kill();
-        return true;
+//    } else if (buf.indexOf('[[[ TEST OK ]]]') > -1) {
+//        process.kill();
+//        return true;
     } else if (buf.indexOf('[[[ TEST FAILED ]]]') > -1) {
         process.kill();
         failures=true;
         return true;
-    } else if (buf.indexOf('Test Results URL') >-1) {
-        console.log(buf);
+    } else if (!logged_url && buf.indexOf(' <<<end test result>>>')>-1 && buf.indexOf('Test Results URL') >-1) {
+        var msgend=buf.indexOf(' <<<end test result>>>');
+        var msgstart =buf.indexOf('Test Results URL');
+        var msg = buf.slice(msgstart,msgend);
+        console.log(msg);
+        logged_url=true;
     }
     return false;
 }
@@ -54,6 +59,7 @@ function run_through(sha, devices, bundlePath, bundleId, callback) {
     }
     var d = devices.shift();
     if (d) {
+        logged_url=false;
         log('Uninstalling app on ' + d);
         var cmd = listdevices + ' uninstall --id=' + d + ' --bundle-id=org.apache.cordova.example';
         shell.exec(cmd, {silent:true,async:true}, function(code, output) {

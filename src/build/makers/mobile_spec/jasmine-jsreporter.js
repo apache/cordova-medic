@@ -111,11 +111,6 @@ limitations under the License.
 
         reportRunnerResults: function (runner) {
             var p = device.platform.toLowerCase();
-            if(!(jasmine.runnerResults.failed)) {
-                console.log('[[[ TEST OK ]]]');
-            } else {
-                console.log('[[[ TEST FAILED ]]]');
-            }
             this.postTests({
                 mobilespec:jasmine.runnerResults,
                 sha:library_sha,
@@ -131,7 +126,7 @@ limitations under the License.
             var doc_id = [ library_sha, json.version, json.model].map(encodeURIComponent).join('__');
             // TODO: expose the db in this url for customization
             var doc_url = this.server + '/mobilespec_results/' + doc_id;
-            console.log('Test Results URL = '+doc_url); 
+            console.log('Test Results URL = '+doc_url+' <<<end test result>>>'); 
             xhr.open("PUT", doc_url, true);
             xhr.onreadystatechange=function() {
                 console.log('onreadystatechange');
@@ -163,6 +158,11 @@ limitations under the License.
                                                 x_h_r.onreadystatechange=function() {
                                                     if (x_h_r.readyState==4) {
                                                         if (x_h_r.status==201) {
+                                                            if(!(jasmine.runnerResults.failed)) {
+                                                                console.log('[[[ TEST OK ]]]');
+                                                            } else {
+                                                                console.log('[[[ TEST FAILED ]]]');
+                                                            }
                                                             console.log('>>> DONE <<<');
                                                             if (blackberry && blackberry.app && blackberry.app.exit) blackberry.app.exit();
                                                         } else {
