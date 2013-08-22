@@ -54,7 +54,7 @@ module.exports = function(output,lib_location,test_dir, sha, devices, entry_poin
                         // modify configuration to Release mode, i386 to armv7 and sdk to iphoneos6.0 so we can use it with fruitstrap
                         // TODO: expose which target sdk to build for
                         var debugScript = path.join(output, 'cordova', 'build');
-                        fs.writeFileSync(debugScript, fs.readFileSync(debugScript, 'utf-8').replace(/configuration Debug/, 'configuration Release').replace(/i386/g,'armv7').replace(/SDK=`.*`/, 'SDK="iphoneos6.1"'), 'utf-8');
+                        fs.writeFileSync(debugScript, fs.readFileSync(debugScript, 'utf-8').replace(/configuration Debug/, 'configuration Release').replace(/i386/g,'armv7').replace(/iphonesimulator/, 'iphoneos'), 'utf-8');
                     } catch(e) {
                         error_writer('ios', sha, 'Exception thrown modifying mobile spec application for iOS.', e.message);
                         callback(true);
@@ -75,7 +75,7 @@ module.exports = function(output,lib_location,test_dir, sha, devices, entry_poin
                                     error_writer('ios', sha, devices, 'No further details dude.');
                                     callback(true);
                                 } else {
-                                    var bundle = path.join(output, 'build', 'mobilespec.app'),
+                                    var bundle = path.join(output, 'build', 'device', 'mobilespec.app'),
                                         bundleId = 'org.apache.mobilespec';
                                     deploy(sha, devices, bundle, bundleId, callback);
                                 }
