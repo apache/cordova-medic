@@ -33,7 +33,7 @@ function nCallbacks(count, callback) {
 
 module.exports = function deploy(sha, devices, path, id, callback) {
     function log(msg) {
-        console.log('[ANDROID] [DEPLOY] ' + msg + ' (' + sha.substr(0,7) + ')');
+        console.log('[ANDROID] [DEPLOY] ' + msg + ' (' + sha + ')');
     }
     function done() {
         log('No Android devices connected. Aborting.');
@@ -86,17 +86,17 @@ module.exports = function deploy(sha, devices, path, id, callback) {
                                     // >>> DONE <<< gets logged when mobile-spec finished everything
                                     logcat.stdout.on('data', function(stdout) {
                                         var buf = stdout.toString();
-                                        if (buf.indexOf('>>> DONE <<<') > -1) {
+                                        if (buf.indexOf('[[[ TEST FAILED ]]]') > -1) {
+                                            log('Mobile-spec finished with failure on ' + d);
+                                            clearTimeout(timer);
+                                            logcat.kill();
+                                            end(true);
+                                        } else if (buf.indexOf('>>> DONE <<<') > -1) {
                                             // kill process and clear timeout
                                             log('Mobile-spec finished on ' + d);
                                             clearTimeout(timer);
                                             logcat.kill();
                                             end(false);
-                                        } else if (buf.indexOf('[[[ TEST FAILED ]]]') > -1) {
-                                            log('Mobile-spec finished with failure on ' + d);
-                                            clearTimeout(timer);
-                                            logcat.kill();
-                                            end(true);
                                         } else if(buf.indexOf('Test Results URL')>-1 && buf.indexOf('<<<end test result>>>')>-1) {
                                             var msg=buf.slice(buf.indexOf('Test Results URL'), buf.indexOf('<<<end test result>>>'))
                                             console.log(msg);

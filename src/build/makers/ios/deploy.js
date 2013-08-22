@@ -27,19 +27,18 @@ var failures=false;
 var logged_url=false;
 
 function kill(process, buf, sha, device_id) {
-    if (buf.indexOf('>>> DONE <<<') > -1) {
+    if (buf.indexOf('[[[ TEST FAILED ]]]') > -1) {
         process.kill();
+        failures=true;
+        console.log('Tests failed on '+device_id);
+        return true;
+    } else if (buf.indexOf('>>> DONE <<<') > -1) {
+        process.kill();
+        console.log('Test complete on '+device_id);
         return true;
     } else if ((buf.indexOf('Assertion failed: (AMDeviceStartService') > -1) || (buf.indexOf('AMDeviceInstallApplication failed') > -1)) {
         // Deployment failed.
         error_writer('ios', sha, 'unknown', device_id, 'Deployment failed.', 'AMDeviceInstallApplication failed');
-        process.kill();
-        failures=true;
-        return true;
-//    } else if (buf.indexOf('[[[ TEST OK ]]]') > -1) {
-//        process.kill();
-//        return true;
-    } else if (buf.indexOf('[[[ TEST FAILED ]]]') > -1) {
         process.kill();
         failures=true;
         return true;
