@@ -16,8 +16,15 @@
   },
   {
     "title" : "Android Release Platform",
-    "categories" : ["ANDROID","TOOLS","MSPEC","TESTMASTER","JS"],
+    "categories" : ["ANDROID","MSPEC"],
     "branch" : "RELEASE",
+    "builder": "Android_Release",
+    "platform": "android"
+  },
+  {
+    "title" : "Android Release Tools",
+    "categories" : ["TOOLS","TESTMASTER"],
+    "branch" : "master",
     "builder": "Android_Release",
     "platform": "android"
   },
@@ -45,8 +52,15 @@
   },
   {
     "title" : "IOS Release Platform",
-    "categories" : ["IOS","TOOLS","MSPEC","TESTMASTER","JS"],
+    "categories" : ["IOS","MSPEC"],
     "branch" : "RELEASE",
+    "builder": "IOS_Release",
+    "platform": "ios"
+  },
+  {
+    "title" : "IOS Release Tools",
+    "categories" : ["TOOLS","TESTMASTER"],
+    "branch" : "master",
     "builder": "IOS_Release",
     "platform": "ios"
   },
