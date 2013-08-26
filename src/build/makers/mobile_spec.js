@@ -16,7 +16,6 @@ limitations under the License.
 */
 var shell     = require('shelljs'),
     path      = require('path'),
-    libraries = require('../../../libraries'),
     config    = require('../../../config'),
     fs        = require('fs');
 
