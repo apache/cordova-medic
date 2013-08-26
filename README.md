@@ -78,4 +78,23 @@ every command has a link to its output o the main display. When a mobile spec te
 
 The tests use COHO and CLI for as much as possible to ensure that the developer tool chain is working.
 
+#Configuration Files
+master.cfg: The main configuration file for buildbot. It is a python script and defines the triggers, builders and status display.
+It uses both config.json and repos.json to determine which platforms and versions to test.
 
+config.json: 
+Used by the buildbot master script and by some of the medic command-line tools. 
+It defines the platforms to test, the current release version, the couchdb url, and the ios keychain. 
+The release version specified here is used anywhere the keyword "RELEASE" is used in a test definition.
+
+
+repos.json: 
+Contains the definitions for the tests (schedulers) and the various repositories in the project. 
+Tests define the components and branches that should trigger a test run. 
+This requires multiple triggers for each test path since a build might use tools from master, platforms from release and plugins from dev.
+
+For each repo there is a release branch (most recent supported release) and a current branch (tip-of-tree). 
+The branches are used by the python script in conjunction with the tests to set up the trggers. 
+  
+
+ 
