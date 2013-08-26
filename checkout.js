@@ -24,10 +24,9 @@ repos.repos.forEach( function(repo) {
         var branch = repo.current;
         if(isRelease) branch = repo.release;
         var dir = getDir(repo.repo);
-        if(fs.statSync(dir).isDirectory() ) {
+        if(fs.existsSync(dir) && fs.statSync(dir).isDirectory() ) {
             shell.pushd(dir);
             if(fs.existsSync('.git')) {
-    console.log('checking '+JSON.stringify(repo));
                 var cmdout = shell.exec('git checkout '+branch);
             }
             shell.popd();
