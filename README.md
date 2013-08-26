@@ -22,18 +22,17 @@
 - get the sample running
 - stop the slave and the master
 - add slaves:
-  - buildslave create-slave slave_common localhost:9889 common-slave pass
   - buildslave create-slave slave_ios localhost:9889 ios-slave pass
   - buildslave create-slave slave_android localhost:9889 android-slave pass
  
-- get two files from the medic repository
+- get three files from the medic repository
   - master.cfg - copy to buildbot/master/master.cfg
-  - config.json.sample -  copy to buildbot, then edit for local ip, test platforms, ios keychain, current release build
+  - config.json.sample -  copy to the buildbot base directory, then edit for local ip, test platforms, ios keychain, current release build
+  - repos.json - copy to the buildbot base directory
 
 #Running the System
 - start the master with buildbot start master
 - start the slaves with:
-  -  buildslave start slave_common
   -  buildslave start slave_ios
   -  buildslave start slave_android
 - point your browser at http://localhost:8010/waterfall to see the buildbot state
@@ -45,9 +44,9 @@
 - force a test by clicking on the test link at the top of the buildbot display and then 'force build'
 
 #Configuring
-- all changes for a local install should only require edits to config.json
-- new platforms, test procedures, build steps, etc in master.cfg which should still be global
-- whenever config.json or master.cfg changes, you need to restart the master (not slaves)
+- all changes for a local install should only require edits to config.json in the buildbot base directory
+- new platforms, test procedures, build steps, etc require edits to master.cfg and repos.json which should still be global (all platforms)
+- whenever config.json, repos.json or master.cfg changes, you need to restart the master (not slaves)
 
 #Overview
 Buildbot polls all the repositories every few minutes to look for changes. Whenever a change is detected, those changes trigger one or more build requests. 
@@ -61,17 +60,20 @@ At the start of each test run, the collection of components (git repositories) a
 The DB ref from this document is used as the SHA for the test and is what is recorded in mobilespec_results or build_errors
 
 The various test runners are configured to report a fail/pass by device and the buildbot display will report FAIL if any test on any device fails. 
+every command has a link to its output o the main display. When a mobile spec test completes, there is a link to the test result written to the output log.
 
 #Current Test Configuration
-- three slaves are configured (Android, iOS and common) Android and iOS wil only run a single test at a time.
+- Two slaves are configured (Android and iOS) Android and iOS wil only run a single test at a time.
 - Tools (Coho, CLI, test system) always build from the master branch
 - Changes to tooling or the test scripts will trigger all tests.
+
 - Android tests:
-  - master branch using cordova-js from master
-  - 3.0.x branch with the embedded cordova-js
+  - platform, mobilespec and js  from master branch, plugins from dev branch (cordova-js is built and copied in)
+  - platform and mobilspec 3.0.x branch with the cordova-js embedded in the cordova-android repo, plugins from master
+
 - iOS tests:
-  - master branch using cordova-js from master
-  - 3.0.x branch with the embedded cordova-js
+  - platform, mobilespec and js  from master branch, plugins from dev branch (cordova-js is built and copied in)
+  - platform and mobilspec 3.0.x branch with the cordova-js embedded in the cordova-ios repo, plugins from master
 
 
 The tests use COHO and CLI for as much as possible to ensure that the developer tool chain is working.
