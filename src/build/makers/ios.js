@@ -54,7 +54,8 @@ module.exports = function(output,lib_location,test_dir, sha, devices, entry_poin
                         // modify configuration to Release mode, i386 to armv7 and sdk to iphoneos6.0 so we can use it with fruitstrap
                         // TODO: expose which target sdk to build for
                         var debugScript = path.join(output, 'cordova', 'build');
-                        fs.writeFileSync(debugScript, fs.readFileSync(debugScript, 'utf-8').replace(/configuration Debug/, 'configuration Release').replace(/i386/g,'armv7').replace(/iphonesimulator/, 'iphoneos'), 'utf-8');
+                        // note that the following has to work for 3.0.0 and later and it change just AFTER 3.0.x release
+                        fs.writeFileSync(debugScript, fs.readFileSync(debugScript, 'utf-8').replace(/configuration Debug/, 'configuration Release').replace(/i386/g,'armv7').replace(/iphonesimulator/, 'iphoneos').replace/SDK=`.*`/, 'SDK="iphoneos"'), 'utf-8');
                     } catch(e) {
                         error_writer('ios', sha, 'Exception thrown modifying mobile spec application for iOS.', e.message);
                         callback(true);
