@@ -55,7 +55,7 @@ module.exports = function(output,lib_location,test_dir, sha, devices, entry_poin
                         // TODO: expose which target sdk to build for
                         var debugScript = path.join(output, 'cordova', 'build');
                         // note that the following has to work for 3.0.0 and later and it change just AFTER 3.0.x release
-                        fs.writeFileSync(debugScript, fs.readFileSync(debugScript, 'utf-8').replace(/configuration Debug/, 'configuration Release').replace(/i386/g,'armv7').replace(/iphonesimulator/, 'iphoneos').replace(/SDK=`.*`/, 'SDK="iphoneos"'), 'utf-8');
+                        fs.writeFileSync(debugScript, fs.readFileSync(debugScript, 'utf-8').replace(/"$PROJECT_PATH\/build"/, '"$PROJECT_PATH/build/device"').replace(/i386/g,'armv7').replace(/iphonesimulator/, 'iphoneos').replace(/SDK=`.*`/, 'SDK="iphoneos"'), 'utf-8');
                     } catch(e) {
                         error_writer('ios', sha, 'Exception thrown modifying mobile spec application for iOS.', e.message);
                         callback(true);
@@ -64,7 +64,7 @@ module.exports = function(output,lib_location,test_dir, sha, devices, entry_poin
                     // compile
                     log('Compiling.');
                         
-                    var debug = 'cd ' + output + ' && ./cordova/build';
+                    var debug = 'cd ' + output + ' && ./cordova/build --release';
                     var compile = shell.exec(debug, {silent:true});
                     if (compile.code > 0) {
                             error_writer('ios', sha, 'Compilation error.', compile.output);
