@@ -17,7 +17,7 @@
 
 - set up a wireless access point so that the devices being tested can access the couchDB
 
-- get [buildbot] (http://buildbot.net) version 0.8.7p1
+- get [buildbot] (http://buildbot.net) version 0.8.8
 - install buildbot using the buildbot install/tutorial instructions
 - get the sample running
 - stop the slave and the master
