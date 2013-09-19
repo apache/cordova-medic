@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    xmlns:rim="http://www.blackberry.com/ns/widgets"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="org.apache.cordova.core.medic"
+    version="0.1.0">
+    <name>Device</name>
+    <description>Cordova Medic Plugin</description>
+    <license>Apache 2.0</license>
+    <keywords>cordova,medic,testing</keywords>
+
+    <js-module src="www/medic.js" name="medic">
+        <clobbers target="medic" />
+    </js-module>
+    <js-module src="www/jasmine-jsreporter.js" name="jasmine-jsreporter">
+        <clobbers target="jasmine-jsreporter" />
+    </js-module>
+
+    <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="Medic" >
+                <param name="android-package" value="org.apache.cordova.medic.Medic"/>
+            </feature>
+            <access origin="http://172.23.188.139" />
+            <content src="autotest/pages/all.html" />
+        </config-file>
+    </platform>
+
+    <!-- ios -->
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Medic">
+                <param name="ios-package" value="CDVMedic"/>
+            </feature>
+            <access origin="http://172.23.188.139" ></access>
+            <content src="autotest/pages/all.html" />
+        </config-file>
+    </platform>
+</plugin>
