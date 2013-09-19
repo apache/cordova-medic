@@ -1,4 +1,5 @@
-#Medic using BuildBot
+
+Medic using BuildBot
 =======
 
 > Tools for Automated Testing of Cordova
@@ -47,6 +48,9 @@
 - all changes for a local install should only require edits to config.json in the buildbot base directory
 - new platforms, test procedures, build steps, etc require edits to master.cfg and repos.json which should still be global (all platforms)
 - whenever config.json, repos.json or master.cfg changes, you need to restart the master (not slaves)
+
+**Note:**  if you install the master on a separate machine from the slave(s), the config.json must be on both machines. 
+The slaves expect to find the file in the buildbot root and require the ios key information, couchdb IP and the start page.
 
 #Overview
 Buildbot polls all the repositories every few minutes to look for changes. Whenever a change is detected, those changes trigger one or more build requests. 
