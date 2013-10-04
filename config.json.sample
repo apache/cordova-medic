@@ -35,5 +35,11 @@
     "ios":{
         "keychainPassword":"",
         "keychainLocation":""
+    },
+    "mail":{
+        "to":["someone@someplace.com"],
+        "from":"yourbuildbot@yourEmailService.com",
+        "password":"yourSMTPpassword"
+        "serverURL":"put your external url here"
     }
 }

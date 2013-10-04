@@ -16,14 +16,14 @@
   },
   {
     "title" : "Android Release Platform",
-    "categories" : ["ANDROID","MSPEC"],
+    "categories" : ["ANDROID"],
     "branch" : "RELEASE",
     "builder": "Android_Release",
     "platform": "android"
   },
   {
     "title" : "Android Release Tools",
-    "categories" : ["TOOLS","TESTMASTER"],
+    "categories" : ["TOOLS","TESTMASTER","MSPEC"],
     "branch" : "master",
     "builder": "Android_Release",
     "platform": "android"
@@ -52,14 +52,14 @@
   },
   {
     "title" : "IOS Release Platform",
-    "categories" : ["IOS","MSPEC"],
+    "categories" : ["IOS"],
     "branch" : "RELEASE",
     "builder": "IOS_Release",
     "platform": "ios"
   },
   {
     "title" : "IOS Release Tools",
-    "categories" : ["TOOLS","TESTMASTER"],
+    "categories" : ["TOOLS","TESTMASTER","MSPEC"],
     "branch" : "master",
     "builder": "IOS_Release",
     "platform": "ios"
@@ -92,6 +92,12 @@
     "category" : "TOOLS",
     "release" : "master",
     "current" :"master"
+},{
+    "title" : "PLUGMAN",
+    "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-plugman.git",
+    "category" : "TOOLS",
+    "release" : "master",
+    "current" :"master"
 }
 ,
 {
@@ -116,7 +122,7 @@
     "title" : "MSPEC",
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-mobile-spec.git",
     "category" : "MSPEC",
-    "release" : "RELEASE",
+    "release" : "master",
     "current" :"master"
 }
 ,
