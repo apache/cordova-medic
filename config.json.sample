@@ -1,6 +1,6 @@
 {
     "couchdb":{
-        "host":""
+        "host":"http://localcouchdb:5984"
     },
     "dashboard":{
         "port":8088
@@ -15,7 +15,8 @@
             "git":"https://git-wip-us.apache.org/repos/asf/cordova-mobile-spec.git"
         },
         "entry":"autotest/pages/all.html",
-        "platforms":null
+        "platforms":"android ios",
+        "release":"3.0.0"
     },
     "blackberry":{
         "devices":{

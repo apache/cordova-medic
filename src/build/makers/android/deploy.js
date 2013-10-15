@@ -26,6 +26,11 @@ module.exports = function deploy(sha, devices, path, id, callback) {
         log('No Android devices connected. Aborting.');
         callback();
     }
+    var activity='.mobilespec';
+    var package='org.apache.mobilespec';
+    var component = package+'/'+activity;
+log('project id='+id);
+log('start component='+component);
     var count = 0;
     if (devices === undefined || !devices) done();
     else {
@@ -43,15 +48,18 @@ module.exports = function deploy(sha, devices, path, id, callback) {
                     cmd = 'adb -s ' + d + ' install -r ' + path;
                     var install = shell.exec(cmd, {silent:true,async:true},function(code, install_output) {
                         if (code > 0) {
+log('cmd = '+cmd);
                             log('Error installing on device ' + d);
                             end();
                         } else {
                             log('Running on device ' + d);
-                            cmd = 'adb -s ' + d + ' shell am start -n ' + id + '/' + id + '.cordovaExample';
+                            cmd = 'adb -s ' + d + ' shell am start -n ' +component; // id + '/' + id + '.cordovaExample';
                             var deploy = shell.exec(cmd, {silent:true,async:true},function(code, run_output) {
                                 if (code > 0) {
                                     log('Error launching mobile-spec on device ' + d + ', continuing.');
-                                    end();
+log('cmd = '+cmd);
+log('code= '+code);
+                                     end();
                                 } else {
                                     log('Mobile-spec launched on device ' + d);
                                     // Clear out logcat buffer for specific device

@@ -23,15 +23,17 @@ var root = path.join(__dirname, '..', '..', '..', '..');
 var fruitstrap = path.join(root, 'node_modules', 'fruitstrap', 'fruitstrap');
 // current fruitstrap dependency has two binaries, uninstall exists under the "listdevices" one
 var listdevices = path.join(root, 'node_modules', 'fruitstrap', 'listdevices');
+var failures=false;
 
 function kill(process, buf, sha, device_id) {
     if (buf.indexOf('>>> DONE <<<') > -1) {
         process.kill();
         return true;
-    } else if (buf.indexOf('AMDeviceInstallApplication failed') > -1) {
+    } else if ((buf.indexOf('Assertion failed: (AMDeviceStartService') > -1) || (buf.indexOf('AMDeviceInstallApplication failed') > -1)) {
         // Deployment failed.
         error_writer('ios', sha, 'unknown', device_id, 'Deployment failed.', 'AMDeviceInstallApplication failed');
         process.kill();
+        failures=true;
         return true;
     }
     return false;
@@ -55,6 +57,7 @@ function run_through(sha, devices, bundlePath, bundleId, callback) {
             // set up a timeout in case mobile-spec doesnt deploy or run
             var timer = setTimeout(function() {
                 fruit.kill();
+                failures=true;
                 log('Mobile-spec timed out on ' + d + ', continuing.');
                 // TODO: write out an error if it times out
                 run_through(sha, devices, bundlePath, bundleId, callback);
@@ -77,7 +80,7 @@ function run_through(sha, devices, bundlePath, bundleId, callback) {
             });
         });
     } else {
-        callback();
+        callback(failures);
     }
 }
 
@@ -91,7 +94,7 @@ module.exports = function deploy(sha, devices, bundlePath, bundleId, callback) {
         run_through(sha, devices, bundlePath, bundleId, callback);
     } else {
         log('No iOS devices detected.');
-        callback();
+        callback(true);
     }
 };
 

@@ -1,97 +1,66 @@
-
-/*
-Copyright (c) 2012 Adobe Systems Incorporated. All rights reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 var shell        = require('shelljs'),
     path         = require('path'),
     error_writer = require('./error_writer'),
     n            = require('ncallbacks'),
-    libraries    = require('../../../libraries'),
-    scan         = require('./android/devices'),
     deploy       = require('./android/deploy'),
-    fs           = require('fs');
+    scan         = require('./android/devices'),
+    fs           = require('fs'),
+    mspec        = require('./mobile_spec');
 
-var android_lib = libraries.paths['cordova-android'];
-var create = path.join(android_lib, 'bin', 'create');
-
-module.exports = function(output, sha, devices, entry_point, callback) {
+module.exports = function(output, sha, devices, entry_point, couchdb_host, callback) {
     function log(msg) {
         console.log('[ANDROID] ' + msg + ' (sha: ' + sha.substr(0,7) + ')');
     }
+      try {
+          // make sure android app got created first.
+          if (!fs.existsSync(output)) {
+              throw new Error('create must have failed as output path does not exist.');
+          }
+          var mspec_out = path.join(output, 'assets', 'www');
+          log('Modifying Cordova Mobilespec application at:'+mspec_out);
+          mspec(mspec_out,sha,devices,entry_point, function(err){
+              if(err) {
+                  error_writer('android', sha, 'Error  modifying mobile spec application.', '');
+                  callback(true);
+              } else {
+                  log('Modifying Cordova android application.');
+                  // add the sha to the junit reporter
+                  var tempJasmine = path.join(output, 'assets', 'www', 'jasmine-jsreporter.js');
+                  if (fs.existsSync(tempJasmine)) {
+                      fs.writeFileSync(tempJasmine, "var library_sha = '" + sha + "';\n" + fs.readFileSync(tempJasmine, 'utf-8'), 'utf-8');
+                  }
 
-    shell.rm('-rf', output);
+                  // modify start page in the config.xml
+                  // modify start page in the config.xml
+                  var configFile = path.join(output, 'res', 'xml', 'config.xml');
 
-    // checkout appropriate tag
-    shell.exec('cd ' + android_lib + ' && git checkout ' + sha, {silent:true, async:true}, function(code, checkout_output) {
-        if (code > 0) {
-            error_writer('android', sha, 'error git-checking out sha ' + sha, checkout_output);
-            callback(true);
-        } else {
-            // create an android app into output dir
-            log('Creating project.');
-            shell.exec(create + ' ' + output, {silent:true,async:true}, function(code, create_out) {
-                if (code > 0) {
-                    error_writer('android', sha, './bin/create error', create_out);
-                    callback(true);
-                } else {
-                    try {
-                        // copy over mobile spec modified html assets
-                        log('Modifying Cordova application.');
 
-                        // make sure android app got created first.
-                        if (!fs.existsSync(output)) {
-                            throw new Error('./bin/create must have failed as output path does not exist.');
-                        }
-                        shell.cp('-Rf', path.join(libraries.output.test, '*'), path.join(output, 'assets', 'www'));
-                        
-                        // add the sha to the junit reporter
-                        var tempJasmine = path.join(output, 'assets', 'www', 'jasmine-jsreporter.js');
-                        if (fs.existsSync(tempJasmine)) {
-                            fs.writeFileSync(tempJasmine, "var library_sha = '" + sha + "';\n" + fs.readFileSync(tempJasmine, 'utf-8'), 'utf-8');
-                        }
-
-                        // modify start page
-                        // 1. old cordova-android: modify the .java file
-                        var javaFile = path.join(output, 'src', 'org', 'apache', 'cordova', 'example', 'cordovaExample.java'); 
-                        fs.writeFileSync(javaFile, fs.readFileSync(javaFile, 'utf-8').replace(/www\/index\.html/, 'www/' + entry_point), 'utf-8');
-                        // 2. new cordova-android: modify the config.xml
-                        var configFile = path.join(output, 'res', 'xml', 'config.xml');
-                        fs.writeFileSync(configFile, fs.readFileSync(configFile, 'utf-8').replace(/<content\s*src=".*"/gi, '<content src="' +entry_point + '"'), 'utf-8');
-                        
-                        // look at which cordova-<v>.js current lib uses
-                        var final_cordovajs = path.join(output, 'assets', 'www', 'cordova.js');
-                        var lib_cordovajs = path.join(android_lib, 'framework', 'assets', 'js', 'cordova.android.js');
-                        fs.writeFileSync(final_cordovajs, fs.readFileSync(lib_cordovajs, 'utf-8'), 'utf-8');
-                    } catch (e) {
-                        error_writer('android', sha, 'Exception thrown modifying Android mobile spec application.', e.message);
-                        callback(true);
-                        return;
-                    }
-
+                  var configFile = path.join(output, 'res', 'xml', 'config.xml');
+                  fs.writeFileSync(configFile, fs.readFileSync(configFile, 'utf-8').replace(/<content\s*src=".*"/gi, '<content src="' +entry_point + '"'), 'utf-8');
+                  // make sure the couch db server is whitelisted
+                  fs.writeFileSync(configFile, fs.readFileSync(configFile, 'utf-8').replace(/<access origin="http:..audio.ibeat.org" *.>/gi,'<access origin="http://audio.ibeat.org" /><access origin="'+couchdb_host+'" />', 'utf-8'));
+              }
+          });
+     } catch (e) {
+         error_writer('android', sha, 'Exception thrown modifying Android mobile spec application.', e.message);
+         callback(true);
+         return;
+     }
+     var pkgname= 'mobilespec';
                     // compile
                     log('Compiling.');
                     var ant = 'cd ' + output + ' && ant clean && ant debug';
                     shell.exec(ant, {silent:true,async:true},function(code, compile_output) {
+                        log('Compile exit:'+code);
                         if (code > 0) {
                             error_writer('android', sha, 'Compilation error', compile_output);
                             callback(true);
                         } else {
-                            var binary_path = path.join(output, 'bin', 'cordovaExample-debug.apk');
-                            var package = 'org.apache.cordova.example';
+                            var binary_path = path.join(output, 'bin', pkgname+'-debug.apk');
+                            var package = 'org.apache.'+pkgname;
                             if (devices) {
                                 // already have a specific set of devices to deploy to
+                                log('deploying to provided devices:'+devices);
                                 deploy(sha, devices, binary_path, package, callback);
                             } else {
                                 // get list of connected devices
@@ -102,14 +71,13 @@ module.exports = function(output, sha, devices, entry_point, callback) {
                                         log(error_message);
                                         callback(true);
                                     } else {
+                                        log('deploying to discovered devices:'+devices);
                                         deploy(sha, devices, binary_path, package, callback);
                                     }
                                 });
                             }
                         }
                     });
-                }
-            });
-        }
-    });
+
 }
+

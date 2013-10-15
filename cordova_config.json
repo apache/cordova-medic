@@ -1,0 +1,16 @@
+{
+  "id":"org.apache.mobilespec",
+  "name":"mobilespec",
+  "lib": {
+    "android": {
+      "uri": "/Users/drkemp/sandbox/cordova-android",
+      "version": "dev",
+      "id": "cordova-android-dev"
+    },
+    "ios": {
+      "uri": "/Users/drkemp/sandbox/cordova-ios",
+      "version": "dev",
+      "id": "cordova-ios-dev"
+    }
+  }
+}

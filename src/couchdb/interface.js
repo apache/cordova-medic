@@ -51,7 +51,6 @@ db.prototype = {
         
         var db = this;
         var url = this.db_url + '/_design/' + design + '/_view/' + view;
-
         request.get(url, function(error, response, body) {
             if (error) callback(error);
             else {
@@ -93,11 +92,15 @@ db.prototype = {
                                             }, function(argh, r, bodee) {
                                                 if (argh) callback(argh);
                                                 else {
-                                                    if (r.statusCode == 201) callback(false, bodee);
-                                                    else callback(true, r.statusCode);
+                                                    if(r){
+                                                        if (r.statusCode == 201) callback(false, bodee);
+                                                        else callback(true, r.statusCode);
+                                                    } else {
+                                                        callback(true,"URL failed?");
+                                                    }
                                                 }
                                             });
-                                        } else callback(true, r.statusCode);
+                                        } else callback(true, res.statusCode);
                                     }
                                 });
                             } else callback(true, resp.statusCode);
@@ -125,5 +128,7 @@ db.prototype = {
 
 module.exports = {
     build_errors:new db('build_errors'),
-    mobilespec_results:new db('mobilespec_results')
+    mobilespec_results:new db('mobilespec_results'),
+    test_details:new db('test_details')
 };
+

@@ -15,9 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 var shell = require('shelljs');
+var path= require('path');
 
-module.exports = function scan(callback) {
-    shell.exec('./node_modules/fruitstrap/listdevices --timeout 1 list-devices', {silent:true, async:true}, function(code, output) {
+module.exports = function scan(test_dir, callback) {
+    var cmd=path.join(test_dir,"node_modules","fruitstrap","listdevices");
+    shell.exec(cmd+' --timeout 1 list-devices', {silent:true, async:true}, function(code, output) {
         var lines = output.split('\n');
         var devices = lines.filter(function(l) {
             return (l.length > 0 && (l.indexOf('Waiting') == -1 && l.indexOf('found') == -1 && l.indexOf('Timed out') == -1));
