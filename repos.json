@@ -76,7 +76,7 @@
 "repos" : [
 {
     "title" : "TESTMASTER",
-    "repo" : "https://github.com/drkemp/bb-test.git",
+    "repo" : "https://git-wip-us.apache.org/repos/asf/cordova-medic.git",
     "category" : "TESTMASTER",
     "release" : "master",
     "current" : "master"
