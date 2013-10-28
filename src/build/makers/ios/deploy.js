@@ -20,7 +20,7 @@ var path         = require('path'),
     cp           = require('child_process');
 
 var root = path.join(__dirname, '..', '..', '..', '..');
-var fruitstrap = path.join(root, 'node_modules', 'fruitstrap', 'fruitstrap');
+var fruitstrap = path.join(root, 'node_modules', 'ios-deploy', 'ios-deploy');
 // current fruitstrap dependency has two binaries, uninstall exists under the "listdevices" one
 var listdevices = path.join(root, 'node_modules', 'fruitstrap', 'listdevices');
 var failures=false;
