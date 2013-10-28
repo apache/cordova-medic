@@ -2,7 +2,7 @@
 "tests" : [
   {
     "title" : "Android Master Platform",
-    "categories" : ["ANDROID","TOOLS","MSPEC","TESTMASTER","JS"],
+    "categories" : ["ANDROID","CLI","PLUGMAN","COHO","MSPEC","TESTMASTER","JS"],
     "branch" : "master",
     "builder": "Android_Master",
     "platform": "android"
@@ -23,7 +23,7 @@
   },
   {
     "title" : "Android Release Tools",
-    "categories" : ["TOOLS","TESTMASTER","MSPEC"],
+    "categories" : ["CLI","PLUGMAN","COHO","TESTMASTER","MSPEC"],
     "branch" : "master",
     "builder": "Android_Release",
     "platform": "android"
@@ -38,7 +38,7 @@
 ,
   {
     "title" : "IOS Master Platform",
-    "categories" : ["IOS","TOOLS","MSPEC","TESTMASTER","JS"],
+    "categories" : ["IOS","CLI","PLUGMAN","COHO","MSPEC","TESTMASTER","JS"],
     "branch" : "master",
     "builder": "IOS_Master",
     "platform": "ios"
@@ -59,7 +59,7 @@
   },
   {
     "title" : "IOS Release Tools",
-    "categories" : ["TOOLS","TESTMASTER","MSPEC"],
+    "categories" : ["CLI","PLUGMAN","COHO","TESTMASTER","MSPEC"],
     "branch" : "master",
     "builder": "IOS_Release",
     "platform": "ios"
@@ -69,6 +69,21 @@
     "categories" : ["PLUGIN"],
     "branch" : "master",
     "builder": "IOS_Release",
+    "platform": "ios"
+  }
+,
+  {
+    "title" : "CLI tooling tests",
+    "categories" : ["CLI","PLUGMAN"],
+    "branch" : "master",
+    "builder": "Tools_CLI",
+    "platform": "ios"
+  },
+  {
+    "title" : "Plugman tests",
+    "categories" : ["PLUGMAN"],
+    "branch" : "master",
+    "builder": "Tools_Plugman",
     "platform": "ios"
   }
 
@@ -83,19 +98,19 @@
 },{
     "title" : "COHO",
     "repo" : "https://git-wip-us.apache.org/repos/asf/cordova-coho.git",
-    "category" : "TOOLS",
+    "category" : "COHO",
     "release" : "master",
     "current" : "master"
 },{
     "title" : "CLI",
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-cli.git",
-    "category" : "TOOLS",
+    "category" : "CLI",
     "release" : "master",
     "current" :"master"
 },{
     "title" : "PLUGMAN",
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-plugman.git",
-    "category" : "TOOLS",
+    "category" : "PLUGMAN",
     "release" : "master",
     "current" :"master"
 }
