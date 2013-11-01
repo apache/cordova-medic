@@ -69,45 +69,49 @@ db.prototype = {
             url:url,
             json:document
         }, function(error, response, body) {
-            if (error) callback(error);
-            else {
-                var status = response.statusCode;
-                if (status == 201) callback(false, body);
-                else if (status == 409) {
-                    request.get(url, function(err, resp, bod) {
-                        if (err) callback(err);
-                        else {
-                            if (resp.statusCode == 200) {
-                                var existing = JSON.parse(bod);
-                                var rev = existing._rev;
-                                request.del({
-                                    url:url + '?rev=' + rev,
-                                }, function(er, res, boday) {
-                                    if (er) callback(er);
-                                    else {
-                                        if (res.statusCode == 200) {
-                                            request.put({
-                                                url:url,
-                                                json:document
-                                            }, function(argh, r, bodee) {
-                                                if (argh) callback(argh);
-                                                else {
-                                                    if(r){
-                                                        if (r.statusCode == 201) callback(false, bodee);
-                                                        else callback(true, r.statusCode);
-                                                    } else {
-                                                        callback(true,"URL failed?");
-                                                    }
-                                                }
-                                            });
-                                        } else callback(true, res.statusCode);
-                                    }
-                                });
-                            } else callback(true, resp.statusCode);
-                        }
-                    });
-                } else callback(true, response.statusCode);
+            if (error || response.statusCode === 404) {
+                console.error('Request failed: ' + url);
+                callback(true, JSON.stringify(body));
+                return;
             }
+
+            var status = response.statusCode;
+            if (status == 201) callback(false, body);
+            else if (status == 409) {
+                request.get(url, function(err, resp, bod) {
+                    if (err) callback(err);
+                    else {
+                        if (resp.statusCode == 200) {
+                            var existing = JSON.parse(bod);
+                            var rev = existing._rev;
+                            request.del({
+                                url:url + '?rev=' + rev,
+                            }, function(er, res, boday) {
+                                if (er) callback(er);
+                                else {
+                                    if (res.statusCode == 200) {
+                                        request.put({
+                                            url:url,
+                                            json:document
+                                        }, function(argh, r, bodee) {
+                                            if (argh) callback(argh);
+                                            else {
+                                                if(r){
+                                                    if (r.statusCode == 201) callback(false, bodee);
+                                                    else callback(true, r.statusCode);
+                                                } else {
+                                                    callback(true,"URL failed?");
+                                                }
+                                            }
+                                        });
+                                    } else callback(true, res.statusCode);
+                                }
+                            });
+                        } else callback(true, resp.statusCode);
+                    }
+                });
+            } else callback(true, response.statusCode);
+            
         });
     },
     follow:function(callback) {

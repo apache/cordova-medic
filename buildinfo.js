@@ -33,9 +33,9 @@ module.exports=function saveBuildInfo(platform,branch,callback) {
     var doc_id_array = [doc.platform,branch, doc.timestamp];
     doc_id_array = doc_id_array.map(encodeURIComponent);
     var doc_id = doc_id_array.join('__');
-    couch.test_details.clobber(doc_id, doc, function(resp, body) {
-        if (resp.error) {
-            console.error('[COUCH ERROR] Saving doc with id ' + doc_id);
+    couch.test_details.clobber(doc_id, doc, function(isFailed, response) {
+        if (isFailed) {
+            console.error('[COUCH ERROR] Saving doc with id ' + doc_id + '. Reason: ' + response);
             callback(true, "");
         } else {
             var testtag=doc_id;
