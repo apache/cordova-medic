@@ -1,44 +1,68 @@
-
 Medic using BuildBot
 =======
 
 > Tools for Automated Testing of Cordova
 
+# Supported Cordova Platforms
+- On Mac
+  - iOS
+  - Android
+- On Windows 
+  - Windows Phone 8
+
 #Installation
-- install on a Mac if you intend to test iOS (only tested on a Mac)
-- get [couchdb] (http://couchdb.apache.org/) 1.3.1 
-  - Install couch db
-  - Edit the local.ini to accept request from external host.
-      bind_address = 0.0.0.0
-  - Setup database:
-      Create three databases
-        - build_errors
-        - mobilespec_results
-        - test_details
+##Select target OS
+Install on a Mac or Windows depending on target test platform(s)
 
-- set up a wireless access point so that the devices being tested can access the couchDB
+## Setup CouchDB
+1. Get and install [couchdb] (http://couchdb.apache.org/) 1.3.1 
+2. Edit the local.ini to accept request from external host
 
-- get [buildbot] (http://buildbot.net) version 0.8.8
-- install buildbot using the buildbot install/tutorial instructions
-- get the sample running
-- stop the slave and the master
-- add slaves:
-  - buildslave create-slave slave_ios localhost:9889 ios-slave pass
-  - buildslave create-slave slave_android localhost:9889 android-slave pass
+  `bind_address = 0.0.0.0`
+
+3. Create the following three databases:
+  - build_errors
+  - mobilespec_results
+  - test_details
+
+4. Set up a wireless access point so that the devices being tested can access the couchDB
+
+## Install BuildBot
+1. Get [buildbot] (http://buildbot.net) version 0.8.8
+2. Install buildbot using the buildbot install/tutorial instructions
+    http://docs.buildbot.net/latest/manual/installation.html
+
+    http://trac.buildbot.net/wiki/RunningBuildbotOnWindows
+3. Get the sample running
+4. Stop the slave and the master
+5. Add slaves:
+  - On Mac
+    - buildslave create-slave slave_ios localhost:9889 ios-slave pass
+    - buildslave create-slave slave_android localhost:9889 android-slave pass
+  - On Windows
+    - buildslave create-slave slave_windows localhost:9889 windows-slave pass
  
-- get three files from the medic repository
+6. Get three files from the medic repository
   - master.cfg - copy to buildbot/master/master.cfg
-  - config.json.sample -  copy to the buildbot base directory, then edit for local ip, test platforms, ios keychain, current release build
   - repos.json - copy to the buildbot base directory
+  - On Mac
+    - config.json.sample -  copy to the buildbot base directory, then edit for local ip, test platforms, ios keychain, current release build
+  - On Windows
+    - config.json.sample-windows -  copy to the buildbot base directory, then edit for local ip
 
 #Running the System
-- start the master with buildbot start master
+- start the master with ~buildbot start master
 - start the slaves with:
-  -  buildslave start slave_ios
-  -  buildslave start slave_android
+  - On Mac
+    -  buildslave start slave_ios
+    -  buildslave start slave_android
+  - On Windows
+    - buildslave start slave_windows
+
+    `Important. On Windows slave instance must be run under administrator.`
 - point your browser at http://localhost:8010/waterfall to see the buildbot state
 - point your browser to the couchDB http://localhost:5984/_utils/index.html to look at detailed test results
-
+c
 #Controlling
 - restart the master with buildbot restart master
 - stop the master with buildbot stop master
@@ -67,7 +91,7 @@ The various test runners are configured to report a fail/pass by device and the 
 every command has a link to its output o the main display. When a mobile spec test completes, there is a link to the test result written to the output log.
 
 #Current Test Configuration
-- Two slaves are configured (Android and iOS) Android and iOS wil only run a single test at a time.
+- All slaves (Android, iOS, Windows) are configured to only run a single test at a time.
 - Tools (Coho, CLI, test system) always build from the master branch
 - Changes to tooling or the test scripts will trigger all tests.
 
@@ -79,6 +103,8 @@ every command has a link to its output o the main display. When a mobile spec te
   - platform, mobilespec and js  from master branch, plugins from dev branch (cordova-js is built and copied in)
   - platform and mobilspec 3.0.x branch with the cordova-js embedded in the cordova-ios repo, plugins from master
 
+- Windows Phone8 tests:
+  - platform, mobilespec and js  from master branch, plugins from dev branch (cordova-js is built and copied in)
 
 The tests use COHO and CLI for as much as possible to ensure that the developer tool chain is working.
 
