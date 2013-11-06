@@ -14,17 +14,19 @@
     "ncallbacks": "1.0.0",
     "mime": "1.2.9",
     "optimist": "0.3.5",
-    "glob":"3.2.6", 
-    "ios-deploy":"1.0.4"
+    "glob":"3.2.6",
+    "q":"0.8.6"
   },
   "devDependencies": {
     "elementtree": "0.1.4",
     "readdirp": "0.2.1",
-    "fruitstrap": "git://github.com/filmaj/fruitstrap.git",
     "forever": "0.10.0",
     "semver": "1.1.0",
     "jasmine-node": ">=1.0.0",
     "memwatch": ""
+  },
+  "scripts": {
+    "install": "node install.js"
   },
   "subdomain": "cordova.medic",
   "engines": {
