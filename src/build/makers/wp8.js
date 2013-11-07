@@ -84,8 +84,8 @@ module.exports = function(output, sha, devices, entry_point, couchdb_host, test_
                 var index = 0;
                 while (mainPageLines[index].indexOf('InitializeComponent();') == -1) ++index;
                 ++index;
-                if (mainPageLines[index].indexOf('www/autotest/pages/all.html') == -1)
-                    mainPageLines.splice(index, 0, '            this.CordovaView.StartPageUri = new Uri("www/autotest/pages/all.html", UriKind.Relative);');
+                if (mainPageLines[index].indexOf(entry_point) == -1)
+                    mainPageLines.splice(index, 0, '            this.CordovaView.StartPageUri = new Uri("'+ entry_point + '", UriKind.Relative);');
                 fs.writeFileSync(path.join(output, 'MainPage.xaml.cs'), mainPageLines.join('\n'));
 
                 // set permanent guid to prevent multiple installations

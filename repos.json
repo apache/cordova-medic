@@ -75,8 +75,15 @@
     "title" : "Windows Phone8 master",
     "categories" : ["WP8"],
     "branch" : "master",
-    "builder": "wp8_master",
+    "builder": "WP8_Master",
     "platform": "wp8"
+  },
+  {
+    "title" : "Windows 8 master",
+    "categories" : ["WINDOWS8"],
+    "branch" : "master",
+    "builder": "Windows8_Master",
+    "platform": "windows8"
   }
 ,
   {
@@ -147,12 +154,18 @@
     "release" : "master",
     "current" :"master"
 },{
+    "title" : "WINDOWS8",
+    "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-windows.git",
+    "category" : "PLATFORM",
+    "release" : "master",
+    "current" :"master"
+},{
     "title" : "MSPEC",
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-mobile-spec.git",
     "category" : "MSPEC",
     "release" : "master",
     "current" :"master"
-}
+},
 {
     "title" : "BATTERY",
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-plugin-battery-status.git",
