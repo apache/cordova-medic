@@ -21,8 +21,6 @@ var path         = require('path'),
 
 var root = path.join(__dirname, '..', '..', '..', '..');
 var fruitstrap = path.join(root, 'node_modules', 'ios-deploy', 'ios-deploy');
-// current fruitstrap dependency has two binaries, uninstall exists under the "listdevices" one
-var listdevices = path.join(root, 'node_modules', 'fruitstrap', 'listdevices');
 var failures=false;
 var logged_url=false;
 
@@ -59,10 +57,6 @@ function run_through(sha, devices, bundlePath, bundleId, callback) {
     var d = devices.shift();
     if (d) {
         logged_url=false;
-        log('Uninstalling app on ' + d);
-        var cmd = listdevices + ' uninstall --id=' + d + ' --bundle-id=org.apache.cordova.example';
-        shell.exec(cmd, {silent:true,async:true}, function(code, output) {
-            if (code > 0) log('Uninstall on ' + d + ' failed, continuing anyways.');
 
             log('Install + deploy on ' + d);
             var args = ['--id=' + d, '--bundle=' + bundlePath, '--debug'];
@@ -92,7 +86,6 @@ function run_through(sha, devices, bundlePath, bundleId, callback) {
                     run_through(sha, devices, bundlePath, bundleId, callback);
                 }
             });
-        });
     } else {
         callback(failures);
     }
