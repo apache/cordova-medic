@@ -30,6 +30,11 @@ fs.writeFileSync(path.join(MSPEC_DIR,'.cordova','config.json'),
       "uri": "'+TEST_DIR_ESCAPED+'/cordova-wp8",\
       "version": "'+BRANCH+'",\
       "id": "cordova-wp8-'+BRANCH+'"\
+    },\
+    "windows8": {\
+      "uri": "'+TEST_DIR_ESCAPED+'/cordova-windows",\
+      "version": "'+BRANCH+'",\
+      "id": "cordova-windows-'+BRANCH+'"\
     }\
   }\
 }');

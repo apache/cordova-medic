@@ -10,7 +10,7 @@ var shell        = require('shelljs'),
 
 module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, callback) {
 
-    var packageName = 'org.apache.cordova.mobilespec.windows8';
+    var packageName = 'org.apache.mobilespec';
     var packageInfo = {};
 
     function query_for_sha(sha, callback) {
@@ -84,33 +84,22 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
                 // modify start page
                 var manifest = fs.readFileSync(path.join(output, 'package.appxmanifest')).toString().split('\n');
                 for (var i in manifest) {
-                    if (manifest[i].indexOf('index.html') != -1) {
-                        manifest[i] = manifest[i].replace('index.html', entry_point);
+                    if (manifest[i].indexOf('www/index.html') != -1) {
+                        log('Modifying start page to ' + entry_point);
+                        manifest[i] = manifest[i].replace('www/index.html', entry_point);
+                        break;
+                    }
+                }
+                // set permanent package name to prevent multiple installations
+                for (var i in manifest) {
+                    if (manifest[i].indexOf('<Identity') != -1) {
+                        manifest[i] = manifest[i].replace(/Name=".+?"/gi, 'Name="'+packageName+'"');
                         break;
                     }
                 }
 
-                // for some reasons cordova-cli generates incorrect manifest file
-                // fix it and also set permanent package name to prevent multiple installations
-//                for (var i in manifest) {
-//                    if (manifest[i].indexOf('<Identity') != -1) {
-//                        var nameIndex = manifest[i].indexOf('Name="') + 6;
-//                        var endNameIndex = manifest[i].indexOf('"', nameIndex);
-//                        var stringAsArray = manifest[i].split('');
-//                        stringAsArray.splice(nameIndex, endNameIndex - nameIndex, packageName.split(''));
-//                        manifest[i] = stringAsArray.join('').replace(/,/g, '');
-//                        var versionIndex = manifest[i].indexOf('Version="') + 9;
-//                        var endVersionIndex = manifest[i].indexOf('"', versionIndex);
-//                        stringAsArray = manifest[i].split('');
-//                        var version = manifest[i].substr(versionIndex, endVersionIndex - versionIndex);
-//                        while (version.split('.').length < 4) version += '.0';
-//                        stringAsArray.splice(versionIndex, endVersionIndex - versionIndex, version.split(''));
-//                        manifest[i] = stringAsArray.join('').replace(/,/g, '');
-//                        break;
-//                    }
-//                }
+                manifest = manifest.join('\n');
 
-                manifest = manifest.join('\n').replace(/www[\\\/]img/g, 'images');
                 fs.writeFileSync(path.join(output, 'package.appxmanifest'), manifest);
 
                 // make sure the couch db server is whitelisted
@@ -139,7 +128,9 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
     function parsePackageInfo() {
         var d = q.defer();
         var cmd = 'powershell Get-AppxPackage ' + packageName;
+        log(cmd);
         shell.exec(cmd, {silent:true, async:true}, function(code, output) {
+            log(output);
             if (code > 0) {
                 d.reject('getting package info failed with code ' + code);
             } else {
@@ -163,7 +154,9 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
         if (fullName) {
             log('Application with the same name is already installed, removing...');
             var cmd = 'powershell Remove-AppxPackage ' + fullName;
+            log(cmd);
             shell.exec(cmd, {async:true, silent:true}, function(code, output) {
+                log(output);
                 if (code > 0) {
                     d.reject('package removing failed with code ' + code);
                 }
@@ -182,7 +175,9 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
     function getAppId() {
         var cmd = 'powershell (get-appxpackagemanifest (get-appxpackage ' + packageName +')).package.applications.application.id';
         var d = q.defer();
+        log(cmd);
         shell.exec(cmd, {silent:true, async:true}, function(code, output) {
+            log(output);
             if (code > 0) {
                 d.reject('unable to get installed app id');
             } else {
@@ -206,10 +201,11 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
 
 
         var cmd = 'explorer ' + runner;
-        console.log('Attempt to run the app via command: ' + cmd);
+        log(cmd);
         shell.exec(cmd, {silent:true,async:true}, function(code, output) {
             // TODO: even if the command succeeded, code is '1'. must be investigated
             // temporary added check for not empty output
+            log(output);
             if (code > 0 && output != "") {
                 d.reject('unable to run ' + appId);
             } else {
@@ -222,7 +218,7 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
 
     return prepareMobileSpec().then(parsePackageInfo).then(removeInstalledPackage).then(function() {
             return deploy(output, sha);
-        }).then(getAppId).then(runApp).then(function() {
+        }).then(parsePackageInfo).then(getAppId).then(runApp).then(function() {
             return waitTestsCompleted(sha, 1000 * test_timeout);
         });
 }

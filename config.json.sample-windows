@@ -6,16 +6,8 @@
         "port":8088
     },
     "app":{
-        "static":{
-            "path":null
-        },
-        "dynamic":{
-            "commit_hook":"src/build/makers/mobile_spec/commit_hook.js",
-            "builder":"src/build/makers/mobile_spec",
-            "git":"https://git-wip-us.apache.org/repos/asf/cordova-mobile-spec.git"
-        },
-        "entry":"autotest/pages/all.html",
-        "platforms":"wp8 windows8",
+        "entry":"www/autotest/pages/all.html",
+        "platforms":"windows8,wp8",
         "release":"master",
         "timeout": 600
     },

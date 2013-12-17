@@ -13,9 +13,10 @@ module.exports = function deploy(path, sha) {
         log('compiling the app...');
         // 'restricted' is used to prevent powershell script (part of build.bat) which requires user interaction to run
         var cmd = 'powershell Set-ExecutionPolicy restricted && cordova\\build.bat';
+        log(cmd);
         shell.exec(cmd, {silent:true, async:true}, function(code, output) {
+            log(output);
             if (code > 0) {
-                log(output);
                 d.reject('build failed with code ' + code);
             } else {
                 d.resolve();
@@ -39,9 +40,10 @@ module.exports = function deploy(path, sha) {
         shell.exec('powershell Set-ExecutionPolicy unrestricted', {silent:false, async:false}, null);
 
         var cmd = 'powershell "& \'' + shell.pwd() + '\\Add-AppDevPackage.ps1\' -Force"'; // full path is required
+        log(cmd);
         shell.exec(cmd, {silent:false, async:true}, function(code, output) {
+            log(output);
             if (code > 0) {
-                log(output);
                 d.reject('deploy failed with code ' + code);
             } else {
                 d.resolve();
