@@ -142,7 +142,10 @@ limitations under the License.
                             console.log('[[[ TEST FAILED ]]]');
                         }
                         console.log('>>> DONE <<<');
-                        if (blackberry && blackberry.app && blackberry.app.exit) blackberry.app.exit();
+                        try { // throws exception on windows8
+                            if (blackberry && blackberry.app && blackberry.app.exit) blackberry.app.exit();
+                        } catch (ex) { }
+
                     } else if (xhr.status == 409) {
                         console.log('conflict on couch');
                         // HTTP 409 Conflict
@@ -194,7 +197,9 @@ limitations under the License.
                         console.log('some crazy shit happened. couch returned some balltastic info. status code: ' + xhr.status);
                         console.log(xhr.responseText);
                         console.log('>>> DONE <<<');
-                        if (blackberry && blackberry.app && blackberry.app.exit) blackberry.app.exit();
+                        try { // throws exception on windows8
+                            if (blackberry && blackberry.app && blackberry.app.exit) blackberry.app.exit();
+                        } catch (ex) { }
                     }
                 }
             };
@@ -205,4 +210,3 @@ limitations under the License.
     // export public
     jasmine.JSReporter = JSReporter;
 })();
-
