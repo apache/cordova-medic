@@ -9,6 +9,7 @@ Medic using BuildBot
   - Android
 - On Windows 
   - Windows Phone 8
+  - Windows 8
 
 #Installation
 ##Select target OS
@@ -59,7 +60,7 @@ Install on a Mac or Windows depending on target test platform(s)
   - On Windows
     - buildslave start slave_windows
 
-    `Important. On Windows slave instance must be run under administrator.`
+    **Note:**  on Windows slave instance must be run under administrator; git/bin folder must be added to PATH so that rm, cp, mkdir commands are available from the command prompt.
 - point your browser at http://localhost:8010/waterfall to see the buildbot state
 - point your browser to the couchDB http://localhost:5984/_utils/index.html to look at detailed test results
 c
@@ -105,6 +106,9 @@ every command has a link to its output o the main display. When a mobile spec te
 
 - Windows Phone8 tests:
   - platform, mobilespec and js  from master branch, plugins from dev branch (cordova-js is built and copied in)
+
+- Windows8 tests:
+  - platform, mobilespec and js  from master branch, plugins from dev branch (cordova-js is built and copied in). Tests are executed on Local Machine, no support to run tests on connected device.
 
 The tests use COHO and CLI for as much as possible to ensure that the developer tool chain is working.
 
