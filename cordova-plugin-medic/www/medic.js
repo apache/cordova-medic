@@ -40,7 +40,8 @@ function Medic() {
        var cfg = JSON.parse(xhr.responseText);
        medic_this.sha = cfg.sha;
        medic_this.couchdb = cfg.couchdb;
-       console.log('Loaded Medic Config: sha='+medic_this.sha+',couchdb='+medic_this.couchdb);
+       medic_this.couchdbext = cfg.couchdbext;
+       console.log('Loaded Medic Config: sha='+medic_this.sha+',couchdb='+medic_this.couchdb+',couchdbext='+medic_this.couchdbext);
     }
     xhr.send();
 }
@@ -52,7 +53,7 @@ Medic.prototype.getJSReporter = function() {
 
     if(!window.jasmine) console.log('[ERROR] jasmine not installed.');
     if(!window.jasmine.JSReporter) console.log('[ERROR] jasmine reporter not installed.');
-    return new window.jasmine.JSReporter( this.couchdb,this.sha );
+    return new window.jasmine.JSReporter( this.couchdb, this.couchdbext, this.sha );
 };
 
 module.exports = new Medic();

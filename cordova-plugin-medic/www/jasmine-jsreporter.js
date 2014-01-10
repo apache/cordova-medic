@@ -62,8 +62,9 @@ limitations under the License.
         'iphone':'ios'
     };
 
-    var JSReporter =  function (server,sha) {
+    var JSReporter =  function (server, serverext, sha) {
         this.server = server;
+        this.serverext = serverext;
         this.sha = sha;
     };
 
@@ -127,7 +128,8 @@ limitations under the License.
             var doc_id = [ this.sha, json.version, json.model].map(encodeURIComponent).join('__');
             // TODO: expose the db in this url for customization
             var doc_url = this.server + '/mobilespec_results/' + doc_id;
-            console.log('Test Results URL = '+doc_url+' <<<end test result>>>'); 
+            var doc_urlext = this.serverext + '/mobilespec_results/' + doc_id;
+            console.log('Test Results URL = '+doc_urlext+' <<<end test result>>>'); 
             xhr.open("PUT", doc_url, true);
             xhr.onreadystatechange=function() {
                 console.log('onreadystatechange');
