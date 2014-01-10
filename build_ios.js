@@ -22,7 +22,7 @@ buildinfo('ios', BRANCH, function (error, sha ) {
     if(error) {
                TEST_OK=false;
     } else {
-       ios(output_location, library_location,TOOL_DIR, sha,'', config.app.entry, config.couchdb.host, function(err){
+       ios(output_location, library_location,TOOL_DIR, sha,'', config.app.entry, config.couchdb, function(err){
            if(err) {
                console.log('iOS test prepare failed')
                TEST_OK=false;
