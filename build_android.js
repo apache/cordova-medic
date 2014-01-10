@@ -22,7 +22,7 @@ buildinfo('Android', BRANCH, function (error, sha ) {
     if(error) {
         TEST_OK=false;
     } else {
-        android(output_location, sha,'', config.app.entry, config.couchdb.host, function(err){
+        android(output_location, sha,'', config.app.entry, config.couchdb, function(err){
             if(err) {
                 console.log('Android test prepare failed')
                 TEST_OK=false;

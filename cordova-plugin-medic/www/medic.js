@@ -33,8 +33,16 @@ require('./jasmine-jsreporter');
 function Medic() {
     this.couchdb = 'http://172.23.188.139:5900';
     this.sha = 'sample';
-
-
+    var medic_this = this;
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "medic.json", false);
+    xhr.onload = xhr.onerror = function() {
+       var cfg = JSON.parse(xhr.responseText);
+       medic_this.sha = cfg.sha;
+       medic_this.couchdb = cfg.couchdb;
+       console.log('Loaded Medic Config: sha='+medic_this.sha+',couchdb='+medic_this.couchdb);
+    }
+    xhr.send();
 }
 Medic.prototype.isEnabled = function() {
     return (!!window.jasmine || !!window.jasmine.JSReporter) ;
