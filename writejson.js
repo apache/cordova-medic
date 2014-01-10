@@ -11,6 +11,10 @@ var TEST_DIR_ESCAPED = TEST_DIR.split("\\").join("\\\\");
 
 if(argv.branch) BRANCH=argv.branch;
 
+var cfgpath = path.join(MSPEC_DIR,'.cordova');
+
+if(!fs.existsSync(cfgpath)) fs.mkdirSync(cfgpath);
+
 fs.writeFileSync(path.join(MSPEC_DIR,'.cordova','config.json'),
 '{\
   "id":"org.apache.mobilespec",\
