@@ -59,7 +59,7 @@ function run_through(sha, devices, bundlePath, bundleId, callback) {
         logged_url=false;
 
             log('Install + deploy on ' + d);
-            var args = ['--id=' + d, '--bundle=' + bundlePath, '--debug'];
+            var args = ['--id=' + d, '--bundle=' + bundlePath, '--debug --device'];
             var buf = '';
             var fruit = cp.spawn(fruitstrap, args);
             // set up a timeout in case mobile-spec doesnt deploy or run
