@@ -54,7 +54,7 @@ module.exports = function(output,lib_location,test_dir, sha, devices, entry_poin
           // compile
           log('Compiling.');
 
-          var debug = 'cd ' + output + ' && ./cordova/build --release';
+          var debug = 'cd ' + output + ' && ./cordova/build --release --device';
           var compile = shell.exec(debug, {silent:true});
           if (compile.code > 0) {
                             error_writer('ios', sha, 'Compilation error.', compile.output);
