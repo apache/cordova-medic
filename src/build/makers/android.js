@@ -34,7 +34,7 @@ module.exports = function(output, sha, devices, entry_point, couchdb_cfg, callba
      var pkgname= 'mobilespec';
                     // compile
                     log('Compiling.');
-                    var ant = 'cd ' + output + ' && '+path.join('.','cordova')+' build --debug';
+                    var ant = 'cd ' + output + ' && '+path.join('.','cordova','build')+' --debug';
                     shell.exec(ant, {silent:true,async:true},function(code, compile_output) {
                         log('Compile exit:'+code);
                         if (code > 0) {
