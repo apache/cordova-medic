@@ -14,7 +14,7 @@ var testpath = process.cwd();
 if(argv.path) testpath=argv.path;
 
 var cmdpath = "./runtest.sh";
-if(argv.cmd) argv.cmd;
+if(argv.cmd) cmdpath=argv.cmd;
 
 function writejson(port,cfgpath){
   var cfgobj = {logurl:"http://127.0.0.1:"+port};
@@ -24,7 +24,7 @@ function writejson(port,cfgpath){
 
 function startTest(){
   console.log("starting test "+cmdpath);
-  testprocess=cp.spawn(cmdpath);
+  testprocess=cp.spawn(cmdpath,[testpath]);
   if(testprocess){
     console.log("started test: "+testprocess.pid);
   } else {
