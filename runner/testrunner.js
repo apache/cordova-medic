@@ -32,7 +32,7 @@ function startTest(){
   }
 }
 
-function endTest(){
+function endTest(resultcode){
   console.log("ending test.");
   server.close();
   if(testprocess){
@@ -41,7 +41,7 @@ function endTest(){
   } else {
     console.log("cant kill test.");
   }
-//  process.exit(0);
+  process.exit(resultcode);
 }
 
 var server = http.createServer(function (req, res) {
@@ -53,7 +53,14 @@ var server = http.createServer(function (req, res) {
     req.on('end',function(){
       console.log(body);
       if(route == '/result'){
-        endTest();
+        var resultcode=0;
+        try{
+          var r = JSON.parse(body);
+          if(r.failures >0) resultcode=1;
+        } catch(err) {
+          resultcode=2;
+        }
+        endTest(resultcode);
       }
     });    
     res.writeHead(200, {'Content-Type': 'text/plain', 'Access-Control-Allow-Origin':'*'});
