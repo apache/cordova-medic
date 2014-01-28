@@ -16,6 +16,8 @@ if(argv.path) testpath=argv.path;
 var cmdpath = "./runtest.sh";
 if(argv.cmd) cmdpath=argv.cmd;
 
+if(argv.port) logport=argv.port;
+
 function writejson(port,cfgpath){
   var cfgobj = {logurl:"http://127.0.0.1:"+port};
   if(!fs.existsSync(cfgpath)) fs.mkdirSync(cfgpath);
@@ -24,7 +26,7 @@ function writejson(port,cfgpath){
 
 function startTest(){
   console.log("starting test "+cmdpath);
-  testprocess=cp.spawn(cmdpath,[testpath]);
+  testprocess=cp.execFile(cmdpath,[testpath]);
   if(testprocess){
     console.log("started test: "+testprocess.pid);
   } else {
@@ -33,10 +35,10 @@ function startTest(){
 }
 
 function endTest(resultcode){
-  console.log("ending test.");
+  console.log("ending test - process ",testprocess.pid);
   server.close();
   if(testprocess){
-    process.kill(testprocess);
+    process.kill(testprocess.pid);
     console.log("killed test.");
   } else {
     console.log("cant kill test.");
@@ -56,7 +58,7 @@ var server = http.createServer(function (req, res) {
         var resultcode=0;
         try{
           var r = JSON.parse(body);
-          if(r.failures >0) resultcode=1;
+          if(r.mobilespec.failures >0) resultcode=1;
         } catch(err) {
           resultcode=2;
         }
