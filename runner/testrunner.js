@@ -7,7 +7,7 @@ var argv = require('optimist').argv;
 var url=require('url');
 
 var logport =0;
-var logurl='http://127.0.0.1';
+var logip='127.0.0.1';
 var testprocess;
 
 var cmdargs;
@@ -20,9 +20,12 @@ var cmdpath = "./runtest.sh";
 if(argv.cmd) cmdpath=argv.cmd;
 
 if(argv.port) logport=argv.port;
+if(argv.ip) logip=argv.ip;
+
+var logurl = "http://"+logip;
 
 function writejson(port,cfgpath){
-  var cfgobj = {logurl:"http://127.0.0.1:"+port};
+  var cfgobj = {logurl:logurl+':'+port};
   if(!fs.existsSync(cfgpath)) fs.mkdirSync(cfgpath);
   fs.writeFileSync(path.join(cfgpath,'medic.json'), JSON.stringify(cfgobj));
 }
@@ -45,8 +48,12 @@ function endTest(resultcode){
   console.log("ending test - process ",testprocess.pid);
   server.close();
   if(testprocess){
-    process.kill(testprocess.pid);
-    console.log("killed test.");
+    try {
+      process.kill(testprocess.pid);
+      console.log("killed test.");
+    } catch (err) {
+      console.log("kill test threw error: ",err);
+    }
   } else {
     console.log("cant kill test.");
   }
@@ -76,7 +83,7 @@ var server = http.createServer(function (req, res) {
     res.end('Got that\n');
   }
 });
-server.listen(logport, '127.0.0.1',511,function(){
+server.listen(logport,logip,511,function(){
   logport = server.address().port;
   console.log('Server running at '+logurl+':'+logport);
   writejson(logport,testpath);
