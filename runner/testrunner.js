@@ -30,6 +30,21 @@ function writejson(port,cfgpath){
   fs.writeFileSync(path.join(cfgpath,'medic.json'), JSON.stringify(cfgobj));
 }
 
+function writeWhitelist(ip){
+  if(! (ip=='127.0.0.1')){
+    try {
+      var url='http://'+ip+'/*';
+      var manifest = path.join(testpath,'manifest.json');
+      fs.writeFileSync(manifest, fs.readFileSync(manifest, 'utf-8').replace(/http:\/\/127\.0\.0\.1\/\*/gi, url), 'utf-8');
+      console.log('Completed Whitelist update for: ',ip);
+    } catch (err) {
+      console.log('Failed to update whitelist: ',err);
+    }
+  } else {
+    console.log('Skipping Whitelist update for: ',ip);
+  }
+}
+
 function startTest(){
   console.log("starting test "+cmdpath);
   if(cmdargs){
@@ -86,6 +101,7 @@ var server = http.createServer(function (req, res) {
 server.listen(logport,logip,511,function(){
   logport = server.address().port;
   console.log('Server running at '+logurl+':'+logport);
+  writeWhitelist(logip);
   writejson(logport,testpath);
   startTest();
 });
