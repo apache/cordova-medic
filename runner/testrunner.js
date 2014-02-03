@@ -10,6 +10,9 @@ var logport =0;
 var logurl='http://127.0.0.1';
 var testprocess;
 
+var cmdargs;
+if(argv.args) cmdargs=argv.args;
+
 var testpath = process.cwd();
 if(argv.path) testpath=argv.path;
 
@@ -26,7 +29,11 @@ function writejson(port,cfgpath){
 
 function startTest(){
   console.log("starting test "+cmdpath);
-  testprocess=cp.execFile(cmdpath,[testpath]);
+  if(cmdargs){
+    testprocess=cp.execFile(cmdpath,[cmdargs]);
+  } else {
+    testprocess=cp.execFile(cmdpath);
+  }
   if(testprocess){
     console.log("started test: "+testprocess.pid);
   } else {
