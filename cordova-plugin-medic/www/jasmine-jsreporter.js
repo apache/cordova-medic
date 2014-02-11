@@ -128,7 +128,7 @@ limitations under the License.
             var doc_id = [ this.sha, json.version, json.model].map(encodeURIComponent).join('__');
             // TODO: expose the db in this url for customization
             var doc_url = this.server + '/mobilespec_results/' + doc_id;
-            var doc_urlext = this.serverext + '/mobilespec_results/' + doc_id;
+            var doc_urlext = this.serverext + '/_utils/document.html?mobilespec_results/' + doc_id;
             console.log('Test Results URL = '+doc_urlext+' <<<end test result>>>'); 
             xhr.open("PUT", doc_url, true);
             xhr.onreadystatechange=function() {
