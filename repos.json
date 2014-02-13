@@ -99,10 +99,37 @@
     "branch" : "master",
     "builder": "Tools_Plugman",
     "platform": "ios"
+  },
+  {
+    "title" : "ChromeSpec on Chrome",
+    "categories" : ["CHROMESPEC"],
+    "branch" : "master",
+    "builder": "ZChrome_Desktop",
+    "platform": "chrome"
+  },
+  {
+    "title" : "ChromeSpec on Android",
+    "categories" : ["CHROMESPEC"],
+    "branch" : "master",
+    "builder": "ZChrome_Mobile",
+    "platform": "chrome"
   }
-
 ],
 "repos" : [
+{
+    "title" : "CCA",
+    "repo" : "https://github.com/MobileChromeApps/mobile-chrome-apps.git",
+    "category" : "CHROMESPEC",
+    "release" : "master",
+    "current" : "master"
+},
+{
+    "title" : "CHROME-CORDOVA",
+    "repo" : "https://github.com/MobileChromeApps/chrome-cordova.git",
+    "category" : "CHROMESPEC",
+    "release" : "master",
+    "current" : "master"
+},
 {
     "title" : "TESTMASTER",
     "repo" : "https://git-wip-us.apache.org/repos/asf/cordova-medic.git",
