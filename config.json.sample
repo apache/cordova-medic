@@ -39,7 +39,7 @@
     "mail":{
         "to":["someone@someplace.com"],
         "from":"yourbuildbot@yourEmailService.com",
-        "password":"yourSMTPpassword"
+        "password":"yourSMTPpassword",
         "serverURL":"put your external url here"
     }
 }
