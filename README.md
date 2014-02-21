@@ -63,7 +63,7 @@ Install on a Mac or Windows depending on target test platform(s)
     **Note:**  on Windows slave instance must be run under administrator; git/bin folder must be added to PATH so that rm, cp, mkdir commands are available from the command prompt.
 - point your browser at http://localhost:8010/waterfall to see the buildbot state
 - point your browser to the couchDB http://localhost:5984/_utils/index.html to look at detailed test results
-c
+
 #Controlling
 - restart the master with buildbot restart master
 - stop the master with buildbot stop master
