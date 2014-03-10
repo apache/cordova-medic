@@ -124,13 +124,6 @@
     "current" : "master"
 },
 {
-    "title" : "CHROME-CORDOVA",
-    "repo" : "https://github.com/MobileChromeApps/chrome-cordova.git",
-    "category" : "CHROMESPEC",
-    "release" : "master",
-    "current" : "master"
-},
-{
     "title" : "TESTMASTER",
     "repo" : "https://git-wip-us.apache.org/repos/asf/cordova-medic.git",
     "category" : "TESTMASTER",
