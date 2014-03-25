@@ -20,7 +20,9 @@ var path         = require('path'),
     cp           = require('child_process');
 
 var root = path.join(__dirname, '..', '..', '..', '..');
-var fruitstrap = path.join(root, 'node_modules', 'ios-deploy', 'ios-deploy');
+//var fruitstrap = path.join(root, 'node_modules', 'ios-deploy', 'ios-deploy');
+// note that ios-deploy works best when installed globally, and only on a Mac
+var fruitstrap = '/usr/local/bin/ios-deploy';
 var failures=false;
 var logged_url=false;
 
