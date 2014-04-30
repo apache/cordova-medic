@@ -97,18 +97,19 @@ every command has a link to its output o the main display. When a mobile spec te
 - Changes to tooling or the test scripts will trigger all tests.
 
 - Android tests:
-  - platform, mobilespec and js  from master branch, plugins from dev branch (cordova-js is built and copied in)
+  - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in)
   - platform and mobilspec 3.0.x branch with the cordova-js embedded in the cordova-android repo, plugins from master
 
 - iOS tests:
-  - platform, mobilespec and js  from master branch, plugins from dev branch (cordova-js is built and copied in)
+  - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in)
   - platform and mobilspec 3.0.x branch with the cordova-js embedded in the cordova-ios repo, plugins from master
 
 - Windows Phone8 tests:
-  - platform, mobilespec and js  from master branch, plugins from dev branch (cordova-js is built and copied in)
+  - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in)
 
 - Windows8 tests:
-  - platform, mobilespec and js  from master branch, plugins from dev branch (cordova-js is built and copied in). Tests are executed on Local Machine, no support to run tests on connected device.
+  - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in)
+  - Tests are executed on Local Machine, no support to run tests on connected device.
 
 The tests use COHO and CLI for as much as possible to ensure that the developer tool chain is working.
 
