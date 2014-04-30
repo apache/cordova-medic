@@ -13,27 +13,6 @@
     "branch" : "master",
     "builder": "Android_Master",
     "platform": "android"
-  },
-  {
-    "title" : "Android Release Platform",
-    "categories" : ["ANDROID"],
-    "branch" : "RELEASE",
-    "builder": "Android_Release",
-    "platform": "android"
-  },
-  {
-    "title" : "Android Release Tools",
-    "categories" : ["CLI","PLUGMAN","COHO","TESTMASTER","MSPEC"],
-    "branch" : "master",
-    "builder": "Android_Release",
-    "platform": "android"
-  },
-  {
-    "title" : "Android Release Plugins",
-    "categories" : ["PLUGIN"],
-    "branch" : "master",
-    "builder": "Android_Release",
-    "platform": "android"
   }
 ,
   {
@@ -48,27 +27,6 @@
     "categories" : ["PLUGIN"],
     "branch" : "master",
     "builder": "IOS_Master",
-    "platform": "ios"
-  },
-  {
-    "title" : "IOS Release Platform",
-    "categories" : ["IOS"],
-    "branch" : "RELEASE",
-    "builder": "IOS_Release",
-    "platform": "ios"
-  },
-  {
-    "title" : "IOS Release Tools",
-    "categories" : ["CLI","PLUGMAN","COHO","TESTMASTER","MSPEC"],
-    "branch" : "master",
-    "builder": "IOS_Release",
-    "platform": "ios"
-  },
-  {
-    "title" : "IOS Release Plugins",
-    "categories" : ["PLUGIN"],
-    "branch" : "master",
-    "builder": "IOS_Release",
     "platform": "ios"
   },
   {
