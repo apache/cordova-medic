@@ -39,6 +39,11 @@ fs.writeFileSync(path.join(MSPEC_DIR,'.cordova','config.json'),
       "uri": "'+TEST_DIR_ESCAPED+'/cordova-windows",\
       "version": "'+BRANCH+'",\
       "id": "cordova-windows-'+BRANCH+'"\
+    },\
+    "blackberry": {\
+      "uri": "'+TEST_DIR+'/cordova-blackberry",\
+      "version": "'+BRANCH+'",\
+      "id": "cordova-blackberry-'+BRANCH+'"\
     }\
   }\
 }');

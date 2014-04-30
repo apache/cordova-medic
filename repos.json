@@ -28,7 +28,8 @@
     "branch" : "master",
     "builder": "IOS_Master",
     "platform": "ios"
-  },
+  }
+,
   {
     "title" : "Windows Phone8 master",
     "categories" : ["WP8"],
@@ -42,6 +43,21 @@
     "branch" : "master",
     "builder": "Windows8_Master",
     "platform": "windows8"
+  }
+,
+  {
+    "title" : "BlackBerry Master Platform",
+    "categories" : ["BLACKBERRY","CLI","PLUGMAN","COHO","MSPEC","TESTMASTER","JS"],
+    "branch" : "master",
+    "builder": "BlackBerry_Master",
+    "platform": "blackberry"
+  },
+  {
+    "title" : "BlackBerry Master Plugins",
+    "categories" : ["PLUGIN"],
+    "branch" : "master",
+    "builder": "BlackBerry_Master",
+    "platform": "blackberry"
   }
 ,
   {
@@ -135,6 +151,12 @@
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-windows.git",
     "category" : "PLATFORM",
     "release" : "master",
+    "current" :"master"
+},{
+    "title" : "BLACKBERRY",
+    "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-blackberry.git",
+    "category" : "PLATFORM",
+    "release" : "RELEASE",
     "current" :"master"
 },{
     "title" : "MSPEC",
