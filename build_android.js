@@ -24,10 +24,10 @@ buildinfo('Android', BRANCH, function (error, sha ) {
     } else {
         android(output_location, sha,'', config.app.entry, config.couchdb, function(err){
             if(err) {
-                console.log('Android test prepare failed')
+                console.log('Android test prepare failed');
                 TEST_OK=false;
             } else {
-                console.log('Android tests complete')
+                console.log('Android tests complete');
             }
        });
     }
