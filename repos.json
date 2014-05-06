@@ -46,16 +46,9 @@
 ,
   {
     "title" : "CLI tooling tests",
-    "categories" : ["CLI","PLUGMAN"],
+    "categories" : ["CLI","CORDOVA-LIB"],
     "branch" : "master",
     "builder": "Tools_CLI",
-    "platform": "ios"
-  },
-  {
-    "title" : "Plugman tests",
-    "categories" : ["PLUGMAN"],
-    "branch" : "master",
-    "builder": "Tools_Plugman",
     "platform": "ios"
   },
   {
@@ -103,6 +96,12 @@
     "title" : "PLUGMAN",
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-plugman.git",
     "category" : "PLUGMAN",
+    "release" : "master",
+    "current" :"master"
+},{
+    "title" : "CORDOVA-LIB",
+    "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-lib.git",
+    "category" : "CLI",
     "release" : "master",
     "current" :"master"
 }
