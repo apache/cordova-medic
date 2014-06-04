@@ -107,14 +107,11 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
                 fs.writeFileSync(configFile, fs.readFileSync(configFile, 'utf-8').replace(
                   /<access origin="http:..audio.ibeat.org" *.>/gi,'<access origin="http://audio.ibeat.org" /><access origin="'+couchdb_host+'" />', 'utf-8'));
 
-                // specify couchdb server and sha for cordova medic plugin
-                var medicPluginCore = path.join(output, '..', '..', 'plugins', 'org.apache.cordova.core.medic', 'www', 'medic.js');
-                var content = fs.readFileSync(medicPluginCore).toString();
-                content = content.replace(
-                    /this\.couchdb = \'.*\'\;/, "this.couchdb = '" + couchdb_host + "';").replace(
-                    /this\.sha = \'.*\'\;/, "this.sha = '" + sha + "';"
-                );
-                fs.writeFileSync(medicPluginCore, content);
+                // specify couchdb server and sha for cordova medic plugin via medic.json
+                log('Write medic.json to autotest folder');
+                var medic_config='{"sha":"'+sha+'","couchdb":"'+couchdb_host+'"}';
+                fs.writeFileSync(path.join(output, '..', '..', 'www','autotest','pages', 'medic.json'),medic_config,'utf-8');
+                
                 defer.resolve();
             });
         }
