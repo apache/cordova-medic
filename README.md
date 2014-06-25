@@ -26,7 +26,19 @@ Install on a Mac or Windows depending on target test platform(s)
   - mobilespec_results
   - test_details
 
-4. Set up a wireless access point so that the devices being tested can access the couchDB
+4. Add new document to `mobilespec_results` table with the following contents:
+  ```
+  {
+      "_id": "_design/results",
+      "views": {
+          "sha": {
+              "map": "function(doc){emit(doc.sha, {\"total\":doc.mobilespec.total,\"passed\":(doc.mobilespec.total - doc.mobilespec.failed),\"version\":doc.version,\"model\":doc.model,\"fails\":doc.mobilespec.failures});}"
+          }
+      }
+  }
+  ```
+
+5. Set up a wireless access point so that the devices being tested can access the couchDB
 
 ## Install BuildBot
 1. Get [buildbot] (http://buildbot.net) version 0.8.8
