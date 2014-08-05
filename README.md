@@ -7,29 +7,51 @@ Medic using BuildBot
 - On Mac
   - iOS
   - Android
-- On Windows 
+- On Windows
+  - Android
   - Windows Phone 8
-  - Windows 8
+  - Windows Universal Apps (Windows 8.0, Windows 8.1, Windows Phone 8.1)
 
 #Installation
 ##Select target OS
 Install on a Mac or Windows depending on target test platform(s)
 
+##Install prerequisites
+medic requires grunt-cli npm package to be installed globally. You can install it by typing `npm install -g grunt-cli` in console.
+
+**Note:** this requires admin privileges on Mac OS.
+
 ## Setup CouchDB
-1. Get and install [couchdb] (http://couchdb.apache.org/) 1.3.1 
+1. Get and install [couchdb](http://couchdb.apache.org/) 1.3.1 
 2. Edit the local.ini to accept request from external host
 
   `bind_address = 0.0.0.0`
+  
+  Also you may need to add appropriate firewall rules for port 5984.
+  
+  To test access to CouchDB portal try to open \<CouchDB host IP\>:5984 from browser
 
-3. Create the following three databases:
+3. Create the following three databases (functionality for creating of them should be available on \<CouchDB host IP\>:5984/_utils/):
   - build_errors
   - mobilespec_results
   - test_details
 
-4. Set up a wireless access point so that the devices being tested can access the couchDB
+4. Add new document to `mobilespec_results` table with the following contents:
+  ```
+  {
+      "_id": "_design/results",
+      "views": {
+          "sha": {
+              "map": "function(doc){emit(doc.sha, {\"total\":doc.mobilespec.total,\"passed\":(doc.mobilespec.total - doc.mobilespec.failed),\"version\":doc.version,\"model\":doc.model,\"fails\":doc.mobilespec.failures});}"
+          }
+      }
+  }
+  ```
+
+5. Set up a wireless access point so that the devices being tested can access the couchDB
 
 ## Install BuildBot
-1. Get [buildbot] (http://buildbot.net) version 0.8.8
+1. Get [buildbot](http://buildbot.net) version 0.8.8
 2. Install buildbot using the buildbot install/tutorial instructions
     http://docs.buildbot.net/latest/manual/installation.html
 
@@ -50,6 +72,11 @@ Install on a Mac or Windows depending on target test platform(s)
     - config.json.sample -  copy to the buildbot base directory, then edit for local ip, test platforms, ios keychain, current release build
   - On Windows
     - config.json.sample-windows -  copy to the buildbot base directory, then edit for local ip
+
+7. Update config.json
+  - Replace `http://localcouchdb:5984` with CouchDB host address
+  
+  **Note:** couchdb host must be specified via ip address due to windows platform restrictions.
 
 #Running the System
 - start the master with ~buildbot start master
@@ -74,9 +101,6 @@ Install on a Mac or Windows depending on target test platform(s)
 - new platforms, test procedures, build steps, etc require edits to master.cfg and repos.json which should still be global (all platforms)
 - whenever config.json, repos.json or master.cfg changes, you need to restart the master (not slaves)
 
-**Note:**  if you install the master on a separate machine from the slave(s), the config.json must be on both machines. 
-The slaves expect to find the file in the buildbot root and require the ios key information, couchdb IP and the start page.
-
 #Overview
 Buildbot polls all the repositories every few minutes to look for changes. Whenever a change is detected, those changes trigger one or more build requests. 
 
@@ -89,7 +113,7 @@ At the start of each test run, the collection of components (git repositories) a
 The DB ref from this document is used as the SHA for the test and is what is recorded in mobilespec_results or build_errors
 
 The various test runners are configured to report a fail/pass by device and the buildbot display will report FAIL if any test on any device fails. 
-every command has a link to its output o the main display. When a mobile spec test completes, there is a link to the test result written to the output log.
+every command has a link to its output on the main display. When a mobile spec test completes, there is a link to the test result written to the output log.
 
 #Current Test Configuration
 - All slaves (Android, iOS, Windows) are configured to only run a single test at a time.
@@ -99,37 +123,38 @@ every command has a link to its output o the main display. When a mobile spec te
 - Android tests:
   - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in)
   - platform and mobilspec 3.0.x branch with the cordova-js embedded in the cordova-android repo, plugins from master
+  - There are additional builder (AndroidWin), which perform builds of mobilespec application for Android in Windows environment.
 
 - iOS tests:
   - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in)
   - platform and mobilspec 3.0.x branch with the cordova-js embedded in the cordova-ios repo, plugins from master
 
 - Windows Phone8 tests:
-  - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in)
+  - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in).
+  - There are two separate builders, which performs builds in different environments (VS2012 + MSBuild 4.0 / VS2013 + MSBuild 12.0)
 
 - Windows8 tests:
   - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in)
   - Tests are executed on Local Machine, no support to run tests on connected device.
 
+- Windows Universal platform tests:
+  - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in)
+  - Tests are executed on Local Machine, mobilespec app for --phone target is launched on emulator. Running mobilespec app on attached devices not supported yet.
+  - There are two separate builders, which performs builds in different environments (VS2012 + MSBuild 4.0 / VS2013 + MSBuild 12.0)
+
 The tests use COHO and CLI for as much as possible to ensure that the developer tool chain is working.
 
 #Configuration Files
-master.cfg: The main configuration file for buildbot. It is a python script and defines the triggers, builders and status display.
+**master.cfg:** The main configuration file for buildbot. It is a python script and defines the triggers, builders and status display.
 It uses both config.json and repos.json to determine which platforms and versions to test.
 
-config.json: 
-Used by the buildbot master script and by some of the medic command-line tools. 
+**config.json:** Used by the buildbot master script and by some of the medic command-line tools. 
 It defines the platforms to test, the current release version, the couchdb url, and the ios keychain. 
 The release version specified here is used anywhere the keyword "RELEASE" is used in a test definition.
 
-
-repos.json: 
-Contains the definitions for the tests (schedulers) and the various repositories in the project. 
+**repos.json:** Contains the definitions for the tests (schedulers) and the various repositories in the project. 
 Tests define the components and branches that should trigger a test run. 
 This requires multiple triggers for each test path since a build might use tools from master, platforms from release and plugins from dev.
 
 For each repo there is a release branch (most recent supported release) and a current branch (tip-of-tree). 
-The branches are used by the python script in conjunction with the tests to set up the trggers. 
-  
-
- 
+The branches are used by the python script in conjunction with the tests to set up the trggers.
