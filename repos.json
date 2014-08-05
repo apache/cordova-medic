@@ -4,29 +4,35 @@
     "title" : "Android Master Platform",
     "categories" : ["ANDROID","CLI","PLUGMAN","COHO","MSPEC","TESTMASTER","JS"],
     "branch" : "master",
-    "builder": "Android_Master",
+    "builder": "Android",
     "platform": "android"
   },
   {
     "title" : "Android Master Plugins",
     "categories" : ["PLUGIN"],
     "branch" : "master",
-    "builder": "Android_Master",
+    "builder": "Android",
     "platform": "android"
-  }
-,
+  },
+    {
+    "title" : "Android Build Windows",
+    "categories" : ["ANDROID","CLI"],
+    "branch" : "master",
+    "builder": "AndroidWin",
+    "platform": "android"
+  },
   {
     "title" : "IOS Master Platform",
     "categories" : ["IOS","CLI","PLUGMAN","COHO","MSPEC","TESTMASTER","JS"],
     "branch" : "master",
-    "builder": "IOS_Master",
+    "builder": "IOS",
     "platform": "ios"
   },
   {
     "title" : "IOS Master Plugins",
     "categories" : ["PLUGIN"],
     "branch" : "master",
-    "builder": "IOS_Master",
+    "builder": "IOS",
     "platform": "ios"
   }
 ,
@@ -34,14 +40,14 @@
     "title" : "Windows Phone8 master",
     "categories" : ["WP8"],
     "branch" : "master",
-    "builder": "WP8_Master",
+    "builder": ["WP8", "WP8_vs2012_win8"],
     "platform": "wp8"
   },
   {
     "title" : "Windows 8 master",
     "categories" : ["WINDOWS8"],
     "branch" : "master",
-    "builder": "Windows8_Master",
+    "builder": ["Windows8", "Windows8_vs2012_win8"],
     "platform": "windows8"
   }
 ,
@@ -49,14 +55,14 @@
     "title" : "BlackBerry Master Platform",
     "categories" : ["BLACKBERRY","CLI","PLUGMAN","COHO","MSPEC","TESTMASTER","JS"],
     "branch" : "master",
-    "builder": "BlackBerry_Master",
+    "builder": "BlackBerry",
     "platform": "blackberry"
   },
   {
     "title" : "BlackBerry Master Plugins",
     "categories" : ["PLUGIN"],
     "branch" : "master",
-    "builder": "BlackBerry_Master",
+    "builder": "BlackBerry",
     "platform": "blackberry"
   }
 ,
@@ -92,10 +98,10 @@
 },
 {
     "title" : "TESTMASTER",
-    "repo" : "https://git-wip-us.apache.org/repos/asf/cordova-medic.git",
+    "repo" : "http://github.com/msopentech/cordova-medic",
     "category" : "TESTMASTER",
-    "release" : "master",
-    "current" : "master"
+    "release" : "windows-fixes",
+    "current" : "windows-fixes"
 },{
     "title" : "COHO",
     "repo" : "https://git-wip-us.apache.org/repos/asf/cordova-coho.git",
