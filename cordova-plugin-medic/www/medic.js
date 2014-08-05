@@ -40,7 +40,7 @@ function Medic() {
        var cfg = JSON.parse(xhr.responseText);
        medic_this.sha = cfg.sha;
        medic_this.couchdb = cfg.couchdb;
-       medic_this.couchdbext = cfg.couchdbext;
+       medic_this.couchdbext = cfg.couchdbext || medic_this.couchdb;
        console.log('Loaded Medic Config: sha='+medic_this.sha+',couchdb='+medic_this.couchdb+',couchdbext='+medic_this.couchdbext);
     }
     xhr.send();

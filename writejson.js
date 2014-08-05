@@ -1,3 +1,5 @@
+/*jshint multistr: true */
+
 var path = require ('path');
 var shell = require('shelljs');
 var fs = require('fs');
@@ -6,7 +8,7 @@ var argv = require('optimist').argv;
 var TEST_DIR=process.cwd();
 var MSPEC_DIR=path.join(TEST_DIR,'mobilespec');
 var BRANCH="dev";
-// required on Windows to correcctly escape path delimiter character
+// required on Windows to correctly escape path delimiter character
 var TEST_DIR_ESCAPED = TEST_DIR.split("\\").join("\\\\");
 
 if(argv.branch) BRANCH=argv.branch;
@@ -40,6 +42,11 @@ fs.writeFileSync(path.join(MSPEC_DIR,'.cordova','config.json'),
       "version": "'+BRANCH+'",\
       "id": "cordova-windows-'+BRANCH+'"\
     },\
+    "windows": {\
+      "uri": "'+TEST_DIR_ESCAPED+'/cordova-windows",\
+      "version": "'+BRANCH+'",\
+      "id": "cordova-windows-'+BRANCH+'"\
+    },\
     "blackberry": {\
       "uri": "'+TEST_DIR_ESCAPED+'/cordova-blackberry",\
       "version": "'+BRANCH+'",\
@@ -47,4 +54,3 @@ fs.writeFileSync(path.join(MSPEC_DIR,'.cordova','config.json'),
     }\
   }\
 }');
-

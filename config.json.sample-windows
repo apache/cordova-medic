@@ -6,8 +6,8 @@
         "port":8088
     },
     "app":{
-        "entry":"www/autotest/pages/all.html",
-        "platforms":"windows8,wp8",
+        "entry":"autotest/pages/all.html",
+        "platforms":"windows8,wp8,android",
         "release":"master",
         "timeout": 600
     },

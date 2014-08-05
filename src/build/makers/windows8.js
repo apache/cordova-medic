@@ -1,58 +1,57 @@
 var shell        = require('shelljs'),
     path         = require('path'),
     n            = require('ncallbacks'),
-    deploy       = require('./windows8/deploy'),
     fs           = require('fs'),
     mspec        = require('./mobile_spec'),
     couch        = require('../../couchdb/interface'),
-    q            = require('q');
+    q            = require('q'),
+    testRunner   = require('./testRunner'),
+    util         = require('util');
 
+module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, build_target) {
 
-module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, callback) {
+    function run() {
+        var d = q.defer();
+        log('Running app...');       
+        var cmd = (build_target == "store80" || build_target == "phone") ?
+            '..\\cordova-cli\\bin\\cordova.cmd run -- --' + build_target :
+            '..\\cordova-cli\\bin\\cordova.cmd run',
+            logFile = sha + '.log',
+            errFile = sha + '.err',
+            endFile = sha + '.end',
+            runner = 'run.bat';
 
-    var packageName = 'org.apache.mobilespec';
-    var packageInfo = {};
+        // create commands that should be started from bat file:
+        //  1. cd to project folder
+        //  2. start 'cmd' defined earlier and redirect its stdout and stderr to files
+        //  3. print exit code of 'cmd' to 'endfile'
+        var runnerContent = util.format('cd /d "%s"\n%s 1>%s 2>%s & echo "%ERRORLEVEL%" >%s',
+            shell.pwd(), cmd, logFile, errFile, endFile);
+        
+        fs.writeFileSync(runner, runnerContent, 'utf-8');
 
-    function query_for_sha(sha, callback) {
+        // the following hack with explorer.exe usage is required to start the tool w/o Admin privileges;
+        // in other case there will be the 'app can't open while File Explorer is running with administrator privileges ...' error
+        shell.exec('explorer ' + runner, {async: false});
 
-        var view = 'sha?key="' + sha + '"';
-        // get build errors from couch for each repo
-        couch.mobilespec_results.query_view('results', view, function(error, result) {
-            if (error) {
-                console.error('query failed for mobilespec_results', error);
-                callback(true, error);
-                return;
-            }
-            callback(false, result);
-        });
-    }
-
-    function isTestsCompleted(sha, callback) {
-        query_for_sha(sha, function(isFailed, res) {
-            // return True if there is no error and there are test results in db for specified sha
-            callback(!isFailed && res.rows.length > 0);
-        });
-    }
-
-    function waitTestsCompleted(sha, timeoutMs) {
-       var defer = q.defer();
-       var startTime = Date.now(),
-           timeoutTime = startTime + timeoutMs,
-           checkInterval = 10 * 1000; // 10 secs
-
-        var testFinishedFn = setInterval(function(){
-
-            isTestsCompleted(sha, function(isSuccess) {
-                // if tests are finished or timeout
-                if (isSuccess || Date.now() > timeoutTime) {
-                    clearInterval(testFinishedFn);
-                    isSuccess ? defer.resolve() : defer.reject('timed out');
+        // Due to explorer, that don't redirects output of child cmd process
+        // and exits immediately after starting bat file we are waiting for
+        // special marker - 'endfile' - to be created when cordova run exits.
+        var waitForRunner = setInterval(function () {
+            if (fs.existsSync(endFile)){
+                clearInterval(waitForRunner);
+                log(fs.readFileSync(logFile));
+                // read 'cordova run' exit code from endfile, that was written by run.bat
+                var exitCode = parseInt(fs.readFileSync(endFile, 'utf-8'), 10);
+                if (exitCode > 0){
+                    log(fs.readFileSync(errFile));
+                    d.reject('Unable to run application. Exit code: ' + exitCode);
                 }
-            });
-        }, checkInterval);
-        return defer.promise;
+                d.resolve();
+            }
+        }, 1000);
+        return d.promise;
     }
-
 
     function log(msg) {
         console.log('[WINDOWS8] ' + msg + ' (sha: ' + sha + ')');
@@ -71,154 +70,40 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
 
             mspec(mspec_out,sha,'',entry_point, function(err){
                 if(err) {
-                    throw new Error('Error thrown modifying Windows8 mobile spec application.');
+                    throw new Error('Error while modifying Windows8 mobile spec application.');
                 }
 
-                log('Modifying Cordova windows8 application.');
-                // add the sha to the junit reporter
-                var tempJasmine = path.join(output, 'www', 'jasmine-jsreporter.js');
-                if (fs.existsSync(tempJasmine)) {
-                    fs.writeFileSync(tempJasmine, "var library_sha = '" + sha + "';\n" + fs.readFileSync(tempJasmine, 'utf-8'), 'utf-8');
+                // specify couchdb server and sha for cordova medic plugin via medic.json
+                log('Write medic.json to autotest folder');
+                var medic_config='{"sha":"'+sha+'","couchdb":"'+couchdb_host+'"}';
+                fs.writeFileSync(path.join(output, '..', '..', 'www','autotest','pages', 'medic.json'),medic_config,'utf-8');
+                
+                // patch WindowsStoreAppUtils script to allow app run w/out active desktop/remote session
+                if (build_target == "store80" || build_target == "store") {
+                    log('Patching WindowsStoreAppUtils to allow app to be run in automated mode');
+                    shell.cp('-f', path.join(output, '..', '..', '..','medic','src', 'utils', 'EnableDebuggingForPackage.ps1'),
+                             path.join(output, 'cordova', 'lib'));
+                    shell.sed('-i', /^\s*\$appActivator .*$/gim,
+                              '$&\n' +
+                              '    powershell ' + path.join(output, 'cordova', 'lib', 'EnableDebuggingForPackage.ps1') + ' $$ID\n' +
+                              '    $Ole32 = Add-Type -MemberDefinition \'[DllImport("Ole32.dll")]public static extern int CoAllowSetForegroundWindow(IntPtr pUnk, IntPtr lpvReserved);\' -Name \'Ole32\' -Namespace \'Win32\' -PassThru\n' +
+                              '    $Ole32::CoAllowSetForegroundWindow([System.Runtime.InteropServices.Marshal]::GetIUnknownForObject($appActivator), [System.IntPtr]::Zero)',
+                              path.join(output, 'cordova', 'lib', 'WindowsStoreAppUtils.ps1'));
                 }
 
-                // modify start page
-                var manifest = fs.readFileSync(path.join(output, 'package.appxmanifest')).toString().split('\n');
-                for (var i in manifest) {
-                    if (manifest[i].indexOf('www/index.html') != -1) {
-                        log('Modifying start page to ' + entry_point);
-                        manifest[i] = manifest[i].replace('www/index.html', entry_point);
-                        break;
-                    }
-                }
-                // set permanent package name to prevent multiple installations
-                for (var i in manifest) {
-                    if (manifest[i].indexOf('<Identity') != -1) {
-                        manifest[i] = manifest[i].replace(/Name=".+?"/gi, 'Name="'+packageName+'"');
-                        break;
-                    }
-                }
-
-                manifest = manifest.join('\n');
-
-                fs.writeFileSync(path.join(output, 'package.appxmanifest'), manifest);
-
-                // make sure the couch db server is whitelisted
-                var configFile = path.join(output, 'www', 'config.xml');
-                fs.writeFileSync(configFile, fs.readFileSync(configFile, 'utf-8').replace(
-                  /<access origin="http:..audio.ibeat.org" *.>/gi,'<access origin="http://audio.ibeat.org" /><access origin="'+couchdb_host+'" />', 'utf-8'));
-
-                // specify couchdb server and sha for cordova medic plugin
-                var medicPluginCore = path.join(output, '..', '..', 'plugins', 'org.apache.cordova.core.medic', 'www', 'medic.js');
-                var content = fs.readFileSync(medicPluginCore).toString();
-                content = content.replace(
-                    /this\.couchdb = \'.*\'\;/, "this.couchdb = '" + couchdb_host + "';").replace(
-                    /this\.sha = \'.*\'\;/, "this.sha = '" + sha + "';"
-                );
-                fs.writeFileSync(medicPluginCore, content);
                 defer.resolve();
             });
         }
         catch (e) {
             defer.reject(e);
         }
-
         return defer.promise;
     }
 
-    function parsePackageInfo() {
-        var d = q.defer();
-        var cmd = 'powershell Get-AppxPackage ' + packageName;
-        log(cmd);
-        shell.exec(cmd, {silent:true, async:true}, function(code, output) {
-            log(output);
-            if (code > 0) {
-                d.reject('getting package info failed with code ' + code);
-            } else {
-                output = output.split('\n');
-                for (var i = 0; i < output.length; ++i) {
-                    if (output[i].indexOf(':') == -1) continue;
-                    var key = output[i].split(':')[0].trim();
-                    var value = output[i].split(':')[1].trim();
-                    while (output[i + 1] && output[i + 1].indexOf(':') == -1) value += output[++i].trim();
-                    packageInfo[key] = value;
-                }
-                d.resolve(packageInfo['PackageFullName']);
-            }
+    return prepareMobileSpec().then(function() {
+            shell.cd(path.join(output, '..', '..'));
+            return run();
+        }).then(function() {
+            return testRunner.waitTestsCompleted(sha, 1000 * test_timeout);
         });
-
-        return d.promise;
-    }
-
-    function removeInstalledPackage(fullName) {
-        var d = q.defer();
-        if (fullName) {
-            log('Application with the same name is already installed, removing...');
-            var cmd = 'powershell Remove-AppxPackage ' + fullName;
-            log(cmd);
-            shell.exec(cmd, {async:true, silent:true}, function(code, output) {
-                log(output);
-                if (code > 0) {
-                    d.reject('package removing failed with code ' + code);
-                }
-                else {
-                    d.resolve();
-                }
-            });
-        }
-        else {
-            d.resolve();
-        }
-
-        return d.promise;
-    }
-
-    function getAppId() {
-        var cmd = 'powershell (get-appxpackagemanifest (get-appxpackage ' + packageName +')).package.applications.application.id';
-        var d = q.defer();
-        log(cmd);
-        shell.exec(cmd, {silent:true, async:true}, function(code, output) {
-            log(output);
-            if (code > 0) {
-                d.reject('unable to get installed app id');
-            } else {
-                d.resolve(packageInfo['PackageFamilyName'] + '!' + output);
-            }
-        });
-
-        return d.promise;
-    }
-
-    function runApp(appId) {
-        var utilsDir = '\\..\\..\\..\\medic\\src\\utils';
-        shell.cd(output + utilsDir);
-        var d = q.defer();
-        // the following hack with explorer.exe usage is required to start the tool w/o Admin privileges;
-        // in other case there will be the 'app can't open while File Explorer is running with administrator privileges ...' error
-
-        var runner = path.join(output, 'AppPackages', 'runLocal.bat'),
-            storeAppLauncher = path.join(output, utilsDir, 'StoreAppLauncher.exe');
-        fs.writeFileSync(runner, storeAppLauncher + ' ' + appId, 'utf-8');
-
-
-        var cmd = 'explorer ' + runner;
-        log(cmd);
-        shell.exec(cmd, {silent:true,async:true}, function(code, output) {
-            // TODO: even if the command succeeded, code is '1'. must be investigated
-            // temporary added check for not empty output
-            log(output);
-            if (code > 0 && output != "") {
-                d.reject('unable to run ' + appId);
-            } else {
-                d.resolve();
-            }
-        });
-
-        return d.promise;
-    }
-
-    return prepareMobileSpec().then(parsePackageInfo).then(removeInstalledPackage).then(function() {
-            return deploy(output, sha);
-        }).then(parsePackageInfo).then(getAppId).then(runApp).then(function() {
-            return waitTestsCompleted(sha, 1000 * test_timeout);
-        });
-}
+};

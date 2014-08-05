@@ -1,3 +1,4 @@
+var fs = require('fs');
 var path = require ('path');
 var shell = require('shelljs');
 var buildinfo = require('./buildinfo');
@@ -18,15 +19,27 @@ var TEST_OK=true;
 if(argv.branch) BRANCH=argv.branch;
 
 var output_location = path.join(MSPEC_DIR,'platforms','windows8');
+// fixes tests crash when windows universal apps used to test
+if (!fs.existsSync(output_location)){
+    output_location = path.join(MSPEC_DIR,'platforms','windows');
+}
 
 buildinfo('Windows8', BRANCH, function (error, sha ) {
+
+    function log(msg) {
+        console.log('[WINDOWS8] ' + msg + ' (sha: ' + sha + ')');
+    }
+
     if(error) {
         TEST_OK=false;
     } else {
         // timeout to execute tests, 10 min by default
         var test_timeout = config.app.timeout ? config.app.timeout : 10 * 60;
+        log(argv);
+        var build_target = argv.phone ? "phone" : argv.store80 ? "store80" : "store";
+        log(build_target);
 
-        windows8(output_location, sha, config.app.entry, config.couchdb.host, test_timeout).then(function() {
+        windows8(output_location, sha, config.app.entry, config.couchdb.host, test_timeout, build_target).then(function() {
                 console.log('Windows8 test execution completed');
             }, function(err) {
                 TEST_OK=false;

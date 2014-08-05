@@ -1,59 +1,36 @@
 var shell        = require('shelljs'),
     path         = require('path'),
     n            = require('ncallbacks'),
-    deploy       = require('./wp8/deploy'),
-    scan         = require('./wp8/devices'),
     fs           = require('fs'),
     mspec        = require('./mobile_spec'),
     couch        = require('../../couchdb/interface'),
-    q            = require('q');
-
+    q            = require('q'),
+    testRunner   = require('./testRunner');
 
 module.exports = function(output, sha, devices, entry_point, couchdb_host, test_timeout, callback) {
 
-    function query_for_sha(sha, callback) {
-
-        var view = 'sha?key="' + sha + '"';
-        // get build errors from couch for each repo
-        couch.mobilespec_results.query_view('results', view, function(error, result) {
-            if (error) {
-                console.error('query failed for mobilespec_results', error);
-                callback(true, error);
-                return;
-            }
-            callback(false, result);
-        });
-    }
-
-    function isTestsCompleted(sha, callback) {
-        query_for_sha(sha, function(isFailed, res) {
-            // return True if there is no error and there are test results in db for specified sha
-            callback(!isFailed && res.rows.length > 0);
-        });
-    }
-
-    function waitTestsCompleted(sha, timeoutMs) {
-       var defer = q.defer();
-       var startTime = Date.now(),
-           timeoutTime = startTime + timeoutMs,
-           checkInterval = 10 * 1000; // 10 secs
-
-        var testFinishedFn = setInterval(function(){
-
-            isTestsCompleted(sha, function(isSuccess) {
-                // if tests are finished or timeout
-                if (isSuccess || Date.now() > timeoutTime) {
-                    clearInterval(testFinishedFn);
-                    isSuccess ? defer.resolve() : defer.reject('timed out');
-                }
-            });
-        }, checkInterval);
-        return defer.promise;
-    }
-
-
     function log(msg) {
         console.log('[WP8] ' + msg + ' (sha: ' + sha + ')');
+    }
+
+    function deploy(path, sha, devices) {
+        var cmd = 'cd ' + path + '\\..\\..\\ && node ..\\cordova-cli\\bin\\cordova run';
+        // run option: --device, --emulator, other
+        if (devices !== '') {
+            cmd += ' --' + devices;
+        }
+        cmd += ' wp8';
+        log ('starting deploy via command: ' + cmd);
+        var defer = q.defer();
+        shell.exec(cmd, {silent:true, async:true}, function(code, output) {
+            if (code > 0) {
+                defer.reject('deploy failed with code: ' + code);
+            }
+            else {
+                defer.resolve();
+            }
+        });
+        return defer.promise;
     }
 
     function prepareMobileSpec() {
@@ -79,15 +56,6 @@ module.exports = function(output, sha, devices, entry_point, couchdb_host, test_
                     fs.writeFileSync(tempJasmine, "var library_sha = '" + sha + "';\n" + fs.readFileSync(tempJasmine, 'utf-8'), 'utf-8');
                 }
 
-                // modify start page
-                var mainPageLines = fs.readFileSync(path.join(output, 'MainPage.xaml.cs')).toString().split('\n');
-                var index = 0;
-                while (mainPageLines[index].indexOf('InitializeComponent();') == -1) ++index;
-                ++index;
-                if (mainPageLines[index].indexOf(entry_point) == -1)
-                    mainPageLines.splice(index, 0, '            this.CordovaView.StartPageUri = new Uri("'+ entry_point + '", UriKind.Relative);');
-                fs.writeFileSync(path.join(output, 'MainPage.xaml.cs'), mainPageLines.join('\n'));
-
                 // set permanent guid to prevent multiple installations
                 var guid = '{8449DEEE-16EB-4A4A-AFCC-8446E8F06FF7}';
                 var appManifestXml = path.join(output, 'Properties', 'WMAppManifest.xml');
@@ -107,19 +75,11 @@ module.exports = function(output, sha, devices, entry_point, couchdb_host, test_
                 fs.writeFileSync(appManifestXml, xml.join('\n'));
 
 
-                // make sure the couch db server is whitelisted
-                var configFile = path.join(output, 'www', 'config.xml');
-                fs.writeFileSync(configFile, fs.readFileSync(configFile, 'utf-8').replace(
-                  /<access origin="http:..audio.ibeat.org" *.>/gi,'<access origin="http://audio.ibeat.org" /><access origin="'+couchdb_host+'" />', 'utf-8'));
+                // specify couchdb server and sha for cordova medic plugin via medic.json
+                log('Write medic.json to autotest folder');
+                var medic_config='{"sha":"'+sha+'","couchdb":"'+couchdb_host+'"}';
+                fs.writeFileSync(path.join(output, '..', '..', 'www','autotest','pages', 'medic.json'),medic_config,'utf-8');
 
-                // specify couchdb server and sha for cordova medic plugin
-                var medicPluginCore = path.join(output, '..', '..', 'plugins', 'org.apache.cordova.core.medic', 'www', 'medic.js');
-                var content = fs.readFileSync(medicPluginCore).toString();
-                content = content.replace(
-                    /this\.couchdb = \'.*\'\;/, "this.couchdb = '" + couchdb_host + "';").replace(
-                    /this\.sha = \'.*\'\;/, "this.sha = '" + sha + "';"
-                );
-                fs.writeFileSync(medicPluginCore, content);
                 defer.resolve();
             });
         }
@@ -130,11 +90,9 @@ module.exports = function(output, sha, devices, entry_point, couchdb_host, test_
         return defer.promise;
     }
 
-    return prepareMobileSpec().
-        then(function() {
+    return prepareMobileSpec().then(function() {
             return deploy(output, sha, devices);
-        }).
-        then(function() {
-            return waitTestsCompleted(sha, 1000 * test_timeout);
+        }).then(function() {
+            return testRunner.waitTestsCompleted(sha, 1000 * test_timeout);
         });
-}
+};
