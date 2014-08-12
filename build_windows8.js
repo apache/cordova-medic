@@ -30,6 +30,18 @@ buildinfo('Windows8', BRANCH, function (error, sha ) {
         console.log('[WINDOWS8] ' + msg + ' (sha: ' + sha + ')');
     }
 
+    function setTargetStoreVersion(version) {
+        log('setting target store version to ' + version);
+
+        var configPath = 'mobilespec/config.xml';
+        configContent = fs.readFileSync(configPath, "utf8");
+
+        var versionPreference = '<preference name="windows-target-version" value="' + version + '" />';
+        configContent = configContent.replace ('</widget>', versionPreference + '\r\n</widget>')
+
+        fs.writeFileSync(configPath, configContent, "utf8");
+    }
+
     if(error) {
         TEST_OK=false;
     } else {
@@ -38,6 +50,14 @@ buildinfo('Windows8', BRANCH, function (error, sha ) {
         log(argv);
         var build_target = argv.phone ? "phone" : argv.store80 ? "store80" : "store";
         log(build_target);
+
+        if (build_target == "store80") {
+            build_target == "store";
+            //setTargetStoreVersion('8.0'); // this value is used by default
+        } else if (build_target == "store") {
+            // store target configuration is specified via config.xml 
+            setTargetStoreVersion('8.1');
+        }
 
         windows8(output_location, sha, config.app.entry, config.couchdb.host, test_timeout, build_target).then(function() {
                 console.log('Windows8 test execution completed');
