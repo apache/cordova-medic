@@ -19,6 +19,7 @@ var installDependency = function(name) {
 
 // the following dependencies must be installed only on non-Windows paltforms
 if (os.platform() !== "win32") {
-  installDependency('ios-deploy');
-  //installDependency('git://github.com/filmaj/fruitstrap.git');
+    if (os.platform() !== "linux")
+        installDependency('ios-deploy');
+    //installDependency('git://github.com/filmaj/fruitstrap.git');
 }

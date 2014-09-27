@@ -25,6 +25,11 @@ fs.writeFileSync(path.join(MSPEC_DIR,'.cordova','config.json'),
       "version": "'+BRANCH+'" ,\
       "id": "cordova-android-'+BRANCH+'"\
     },\
+    "ubuntu": {\
+      "uri": "'+TEST_DIR_ESCAPED+'/cordova-ubuntu",\
+      "version": "'+BRANCH+'" ,\
+      "id": "cordova-ubuntu-'+BRANCH+'"\
+    },\
     "ios": {\
       "uri": "'+TEST_DIR_ESCAPED+'/cordova-ios",\
       "version": "'+BRANCH+'",\

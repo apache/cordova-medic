@@ -16,6 +16,14 @@
   }
 ,
   {
+    "title" : "Ubuntu Release Platform",
+    "categories" : ["UBUNTU"],
+    "branch" : "RELEASE",
+    "builder": "Ubuntu_Release",
+    "platform": "ubuntu"
+  }
+,
+  {
     "title" : "IOS Master Platform",
     "categories" : ["IOS","CLI","PLUGMAN","COHO","MSPEC","TESTMASTER","JS"],
     "branch" : "master",
@@ -131,6 +139,12 @@
 },{
     "title" : "ANDROID",
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-android.git",
+    "category" : "PLATFORM",
+    "release" : "RELEASE",
+    "current" :"master"
+},{
+    "title" : "UBUNTU",
+    "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-ubuntu.git",
     "category" : "PLATFORM",
     "release" : "RELEASE",
     "current" :"master"

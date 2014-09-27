@@ -10,6 +10,9 @@ Medic using BuildBot
 - On Windows 
   - Windows Phone 8
   - Windows 8
+- On Ubuntu
+  - Ubuntu
+  - Android
 
 #Installation
 ##Select target OS
