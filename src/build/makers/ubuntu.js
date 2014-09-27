@@ -21,7 +21,7 @@ module.exports = function(output, sha, devices, entry_point, couchdb_cfg, callba
 
         // add the medic configuration (sha,host) to destination folder
         var medic_config = '{"sha":"'+sha+'","couchdb":"'+couchdb_cfg.host+'","couchdbext":"'+couchdb_cfg.exthost+'"}';
-        fs.writeFileSync(path.join(output, '..', '..' , 'www', 'autotest', 'pages', 'medic.json'),medic_config,'utf-8');
+        fs.writeFileSync(path.join(output, 'www', 'autotest', 'pages', 'medic.json'),medic_config,'utf-8');
         log('Modifying Cordova android application.');
     } catch (e) {
         error_writer('ubuntu', sha, 'Exception thrown modifying Ubuntu mobile spec application.', e.message);
