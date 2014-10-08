@@ -3,7 +3,7 @@ var path = require ('path');
 var shell = require('shelljs');
 var buildinfo = require('./buildinfo');
 var config = require('./config');
-var windows8  = require('./src/build/makers/windows8');
+var windows  = require('./src/build/makers/windows');
 var argv = require('optimist').argv;
 var error_writer = require('./src/build/makers/error_writer');
 
@@ -18,16 +18,12 @@ var TEST_OK=true;
 
 if(argv.branch) BRANCH=argv.branch;
 
-var output_location = path.join(MSPEC_DIR,'platforms','windows8');
-// fixes tests crash when windows universal apps used to test
-if (!fs.existsSync(output_location)){
-    output_location = path.join(MSPEC_DIR,'platforms','windows');
-}
+var output_location = path.join(MSPEC_DIR,'platforms','windows');
 
-buildinfo('Windows8', BRANCH, function (error, sha ) {
+buildinfo('Windows', BRANCH, function (error, sha ) {
 
     function log(msg) {
-        console.log('[WINDOWS8] ' + msg + ' (sha: ' + sha + ')');
+        console.log('[WINDOWS] ' + msg + ' (sha: ' + sha + ')');
     }
 
     function setTargetStoreVersion(version) {
@@ -59,11 +55,11 @@ buildinfo('Windows8', BRANCH, function (error, sha ) {
             setTargetStoreVersion('8.1');
         }
 
-        windows8(output_location, sha, config.app.entry, config.couchdb.host, test_timeout, build_target).then(function() {
-                console.log('Windows8 test execution completed');
+        windows(output_location, sha, config.app.entry, config.couchdb.host, test_timeout, build_target).then(function() {
+                console.log('Windows test execution completed');
             }, function(err) {
                 TEST_OK=false;
-                error_writer('windows8', sha, 'Windows8 tests execution failed.', err);
+                error_writer('windows', sha, 'Windows tests execution failed.', err);
             });
     }
 });

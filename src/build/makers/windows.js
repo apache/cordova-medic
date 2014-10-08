@@ -54,11 +54,11 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
     }
 
     function log(msg) {
-        console.log('[WINDOWS8] ' + msg + ' (sha: ' + sha + ')');
+        console.log('[WINDOWS] ' + msg + ' (sha: ' + sha + ')');
     }
 
     function prepareMobileSpec() {
-        // make sure windows8 app got created first.
+        // make sure windows app got created first.
         var defer = q.defer();
         try {
             if (!fs.existsSync(output)) {
@@ -70,7 +70,7 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
 
             mspec(mspec_out,sha,'',entry_point, function(err){
                 if(err) {
-                    throw new Error('Error while modifying Windows8 mobile spec application.');
+                    throw new Error('Error while modifying Windows mobile spec application.');
                 }
 
                 // specify couchdb server and sha for cordova medic plugin via medic.json
