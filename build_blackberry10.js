@@ -4,6 +4,7 @@ var path = require ('path'),
     config = require('./config'),
     blackberry10  = require('./src/build/makers/blackberry10'),
     argv = require('optimist').argv;
+var testcheck = require('./testchecker');
 
 // this assumes that you start it in the sandbox
 
@@ -28,6 +29,7 @@ buildinfo('BlackBerry', BRANCH, function (error, sha ) {
                 TEST_OK=false;
             } else {
                 console.log('BlackBerry tests complete');
+                TEST_OK = testcheck.checkTestResults(sha, config.couchdb.host) == 0 ? true : false;
             }
        });
     }

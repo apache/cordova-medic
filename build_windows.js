@@ -6,6 +6,7 @@ var config = require('./config');
 var windows  = require('./src/build/makers/windows');
 var argv = require('optimist').argv;
 var error_writer = require('./src/build/makers/error_writer');
+var testcheck = require('./testchecker');
 
 // this assumes that you start it in the sandbox
 
@@ -57,6 +58,7 @@ buildinfo('Windows', BRANCH, function (error, sha ) {
 
         windows(output_location, sha, config.app.entry, config.couchdb.host, test_timeout, build_target).then(function() {
                 console.log('Windows test execution completed');
+                TEST_OK = testcheck.checkTestResults(sha, config.couchdb.host) == 0 ? true : false;
             }, function(err) {
                 TEST_OK=false;
                 error_writer('windows', sha, 'Windows tests execution failed.', err);

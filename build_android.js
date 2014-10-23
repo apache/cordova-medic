@@ -4,6 +4,7 @@ var buildinfo = require('./buildinfo');
 var config = require('./config');
 var android  = require('./src/build/makers/android');
 var argv = require('optimist').argv;
+var testcheck = require('./testchecker');
 
 // this assumes that you start it in the sandbox
 
@@ -28,6 +29,7 @@ buildinfo('Android', BRANCH, function (error, sha ) {
                 TEST_OK=false;
             } else {
                 console.log('Android tests complete');
+                TEST_OK = testcheck.checkTestResults(sha, config.couchdb.host) == 0 ? true : false;
             }
        });
     }
