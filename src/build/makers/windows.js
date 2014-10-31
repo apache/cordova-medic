@@ -10,12 +10,17 @@ var shell        = require('shelljs'),
 
 module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, build_target) {
 
+    var target_folder = ((build_target == 'store') ? 'windows' : ((build_target == 'store80') ? 'windows80' : 'phone')),
+        noBuildMarker = '<!-- no build marker -->',
+        manifestFile = path.join('platforms', 'windows', 'build', target_folder, 'debug', 'anycpu', 'AppxManifest.xml');
+    
+    build_target = (build_target == 'store' || build_target == 'store80') ? 'win' : build_target;
+
+
     function run() {
         var d = q.defer();
         log('Running app...');       
-        var cmd = (build_target == "store80" || build_target == "phone") ?
-            '..\\cordova-cli\\bin\\cordova.cmd run -- --' + build_target :
-            '..\\cordova-cli\\bin\\cordova.cmd run',
+        var cmd = '..\\cordova-cli\\bin\\cordova.cmd run windows -- --' + build_target + ' --nobuild',
             logFile = sha + '.log',
             errFile = sha + '.err',
             endFile = sha + '.end',
@@ -99,11 +104,29 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
         }
         return defer.promise;
     }
+    
+    function build() {
+        log('Building app...');
+        
+        cmd = '..\\cordova-cli\\bin\\cordova.cmd build windows -- --' + build_target;
+
+        shell.exec(cmd);
+        
+        fs.appendFileSync(manifestFile, noBuildMarker, 'utf-8');
+    }
+    
+    function testNoBuild() {
+        var manifestContent = fs.readFileSync(manifestFile, 'utf-8');
+        
+        if (manifestContent.indexOf(noBuildMarker) === -1) {
+            throw new Error('NoBuild parameter test failed.');
+        }
+    }
 
     return prepareMobileSpec().then(function() {
             shell.cd(path.join(output, '..', '..'));
-            return run();
-        }).then(function() {
+            return build();
+        }).then(run).then(function() {
             return testRunner.waitTestsCompleted(sha, 1000 * test_timeout);
-        });
+        }).then(testNoBuild);
 };
