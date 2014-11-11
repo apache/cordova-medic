@@ -1,60 +1,72 @@
-var http = require('http');
-var url = require('url');
+var http = require('http'),
+    url = require('url');
+    q = require('q'),
 
-var checkTestResults = function(sha, dbHost) {
-    console.log('Starting results verification for ' + sha);
+module.exports = function(sha, dbHost) {
 
-    var options = {
-        host: url.parse(dbHost).hostname,
-        port: url.parse(dbHost).port,
-        path: '/mobilespec_results/_all_docs?start_key="' + sha + '"&limit=1'
-    };
+        function getDocumentIdBySha() {
+        var options = {
+                host: url.parse(dbHost).hostname,
+                port: url.parse(dbHost).port,
+                path: '/mobilespec_results/_all_docs?start_key="' + sha + '"&limit=1'
+            },
+            resultsDoc = '',
+            d = q.defer();
 
-    var resultsDoc = "";
+        http.get(options, function(result) {
+            result.on("data", function(chunk) {
+                resultsDoc += chunk.toString();
+            });
 
-    // get current document id by sha
-    var req =  http.get(options, function(result) {
-        result.on("data", function(chunk) {
-            resultsDoc += chunk.toString();
+            result.on('end', function () {
+                d.resolve(JSON.parse(resultsDoc).rows[0].id);
+            });
+        }).on('error', function(e) {
+            console.log("Got error: " + e.message);
+            d.reject(e);
         });
+        
+        return d.promise;
+    };
+    
+    function getTestResult(resultId) {
 
-        result.on('end', function () {
-            var resultId = JSON.parse(resultsDoc).rows[0].id;
-
-            var requestOptions = {
+        var options = {
                 host: url.parse(dbHost).hostname,
                 port: url.parse(dbHost).port,
                 path: '/mobilespec_results/' + resultId
-            };
+            },
+            d = q.defer(),
+            resultsJSON = "",
+            failure;
 
-            var resultsJSON = "";
-            var failure;
-
-            // get failures by document id
-            var resultsRequest = http.get(requestOptions, function(res) {
-                res.on("data", function(chunk) {
-                    resultsJSON += chunk;
-                });
-
-                res.on('end', function() {
-                    failure = JSON.parse(resultsJSON);
-                    if(typeof failure.mobilespec.failures == "undefined") {
-                        console.log("No failures were detected");
-                        return 0;
-                    } else {
-                        console.log('Test failures were detected. Open ' +
-                        dbHost + '/_utils/document.html?mobilespec_results/' +
-                        resultId + ' for details');
-                        return -1;
-                    }
-                });
-            }).on('error', function(e) {
-                console.log("Got error: " + e.message);
+        http.get(options, function(res) {
+            res.on("data", function(chunk) {
+                resultsJSON += chunk;
             });
-        });
-    }).on('error', function(e) {
-        console.log("Got error: " + e.message);
-    });
-}
 
-module.exports.checkTestResults = checkTestResults;
+            res.on('end', function() {
+                d.resolve(JSON.parse(resultsJSON));
+            });
+        }).on('error', function(e) {
+            console.log("Got error: " + e.message);
+            d.reject(e)
+        });
+        
+        return d.promise;
+    };
+    
+    function checkFailure(testResult) {
+        if(typeof testResult.mobilespec.failures == "undefined") {
+            console.log("No failures were detected");
+            return true;
+        } else {
+            console.log('Test failures were detected. Open ' + dbHost + '/_utils/document.html?mobilespec_results/' + testResult._id + ' for details');
+            return false;
+        }
+    };
+    
+    console.log('Starting results verification for ' + sha);
+    
+    return getDocumentIdBySha().then(getTestResult).then(checkFailure);
+};

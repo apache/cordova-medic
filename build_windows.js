@@ -57,9 +57,14 @@ buildinfo('Windows', BRANCH, function (error, sha ) {
         }
 
         windows(output_location, sha, config.app.entry, config.couchdb.host, test_timeout, build_target).then(function() {
-                console.log('Windows test execution completed');
-                TEST_OK = testcheck.checkTestResults(sha, config.couchdb.host) == 0 ? true : false;
-            }, function(err) {
+                return testcheck(sha, config.couchdb.host);
+            }).then(function (testCheckResult) {
+                TEST_OK = testCheckResult;
+
+                if (TEST_OK) {
+                    console.log('Windows test execution completed');
+                }
+            }).catch(function (err) {
                 TEST_OK=false;
                 error_writer('windows', sha, 'Windows tests execution failed.', err);
             });
