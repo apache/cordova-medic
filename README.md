@@ -60,18 +60,15 @@ medic requires grunt-cli npm package to be installed globally. You can install i
 4. Stop the slave and the master
 5. Add slaves:
   - On Mac
-    - buildslave create-slave slave_ios localhost:9889 ios-slave pass
-    - buildslave create-slave slave_android localhost:9889 android-slave pass
+    - buildslave create-slave slave_ios localhost:9889 cordova-ios-slave pass
+    - buildslave create-slave slave_android localhost:9889 cordova-android-slave pass
   - On Windows
-    - buildslave create-slave slave_windows localhost:9889 windows-slave pass
+    - buildslave create-slave slave_windows localhost:9889 cordova-windows-slave pass
  
 6. Get three files from the medic repository
   - master.cfg - copy to buildbot/master/master.cfg
   - repos.json - copy to the buildbot base directory
-  - On Mac
-    - config.json.sample -  copy to the buildbot base directory, then edit for local ip, test platforms, ios keychain, current release build
-  - On Windows
-    - config.json.sample-windows -  copy to the buildbot base directory, then edit for local ip
+  - config.json.sample -  copy to the buildbot base directory, then edit for local ip, test platforms, ios keychain, current release build
 
 7. Update config.json
   - Replace `http://localcouchdb:5984` with CouchDB host address
