@@ -98,10 +98,10 @@
 },
 {
     "title" : "TESTMASTER",
-    "repo" : "http://github.com/msopentech/cordova-medic",
+    "repo" : "https://git-wip-us.apache.org/repos/asf/cordova-medic.git",
     "category" : "TESTMASTER",
-    "release" : "windows-fixes",
-    "current" : "windows-fixes"
+    "release" : "master",
+    "current" : "master"
 },{
     "title" : "COHO",
     "repo" : "https://git-wip-us.apache.org/repos/asf/cordova-coho.git",
@@ -137,31 +137,31 @@
 },{
     "title" : "ANDROID",
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-android.git",
-    "category" : "PLATFORM",
+    "category" : "ANDROID",
     "release" : "RELEASE",
     "current" :"master"
 },{
     "title" : "IOS",
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-ios.git",
-    "category" : "PLATFORM",
+    "category" : "IOS",
     "release" : "RELEASE",
     "current" :"master"
 },{
     "title" : "WP8",
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-wp8.git",
-    "category" : "PLATFORM",
+    "category" : "WP8",
     "release" : "master",
     "current" :"master"
 },{
     "title" : "WINDOWS",
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-windows.git",
-    "category" : "PLATFORM",
+    "category" : "WINDOWS",
     "release" : "master",
     "current" :"master"
 },{
     "title" : "BLACKBERRY",
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-blackberry.git",
-    "category" : "PLATFORM",
+    "category" : "BLACKBERRY",
     "release" : "RELEASE",
     "current" :"master"
 },{
@@ -170,8 +170,13 @@
     "category" : "MSPEC",
     "release" : "master",
     "current" :"master"
-},
-{
+},{
+    "title" : "TESTFRAMEWORK",
+    "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-plugin-test-framework.git",
+    "category" : "PLUGIN",
+    "release" : "master",
+    "current" :"master"
+},{
     "title" : "BATTERY",
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-plugin-battery-status.git",
     "category" : "PLUGIN",
@@ -270,6 +275,12 @@
 },{
     "title" : "SPLASHSCREEN",
     "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-plugin-splashscreen.git",
+    "category" : "PLUGIN",
+    "release" : "master",
+    "current" :"master"
+},{
+    "title" : "STATUSBAR",
+    "repo"  : "https://git-wip-us.apache.org/repos/asf/cordova-plugin-statusbar.git",
     "category" : "PLUGIN",
     "release" : "master",
     "current" :"master"
