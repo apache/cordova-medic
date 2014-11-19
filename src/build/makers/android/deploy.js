@@ -39,7 +39,7 @@ module.exports = function deploy(sha, devices, path, id, callback) {
         log('No Android devices connected. Aborting.');
         callback();
     }
-    var activity='.mobilespec';
+    var activity='.MainActivity';
     var package='org.apache.mobilespec';
     var component = package+'/'+activity;
     var count = 0;
