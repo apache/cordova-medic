@@ -16,7 +16,7 @@
   },
     {
     "title" : "Android Build Windows",
-    "categories" : ["ANDROID","CLI"],
+    "categories" : ["ANDROID","CLI","PLUGIN","COHO","MSPEC","TESTMASTER","JS"],
     "branch" : "master",
     "builder": "AndroidWin",
     "platform": "android"
@@ -38,14 +38,14 @@
 ,
   {
     "title" : "Windows Phone8 master",
-    "categories" : ["WP8"],
+    "categories" : ["WP8","CLI","PLUGIN","COHO","MSPEC","TESTMASTER","JS"],
     "branch" : "master",
     "builder": ["WP8", "WP8_vs2012_win8"],
     "platform": "wp8"
   },
   {
     "title" : "Windows 8 master",
-    "categories" : ["WINDOWS"],
+    "categories" : ["WINDOWS","CLI","PLUGIN","COHO","MSPEC","TESTMASTER","JS"],
     "branch" : "master",
     "builder": ["Windows", "Windows8_vs2012_win8"],
     "platform": "windows"
