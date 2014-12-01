@@ -119,7 +119,7 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
                 fs.writeFileSync(path.join(output, '..', '..', 'www','autotest','pages', 'medic.json'),medic_config,'utf-8');
                 
                 // patch WindowsStoreAppUtils script to allow app run w/out active desktop/remote session
-                if (build_target == "store80" || build_target == "store") {
+                if (build_target == "win") {
                     log('Patching WindowsStoreAppUtils to allow app to be run in automated mode');
                     shell.cp('-f', path.join(output, '..', '..', '..','medic','src', 'utils', 'EnableDebuggingForPackage.ps1'),
                              path.join(output, 'cordova', 'lib'));
