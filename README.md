@@ -65,15 +65,18 @@ medic requires grunt-cli npm package to be installed globally. You can install i
   - On Windows
     - buildslave create-slave slave_windows localhost:9889 cordova-windows-slave pass
  
-6. Get three files from the medic repository
-  - master.cfg - copy to buildbot/master/master.cfg
-  - repos.json - copy to the buildbot base directory
-  - config.json.sample -  copy to the buildbot base directory, then edit for local ip, test platforms, ios keychain, current release build
+6. Copy the following files from the medic repository to buildbot master directory:
+  - master.cfg
+  - projects.conf
+  - cordova.conf
+  - repos.json
+  - config.json.sample
 
-7. Update config.json
-  - Replace `http://localcouchdb:5984` with CouchDB host address
+  Then update config.json.sample with CouchDB host address, test platforms, ios keychain, current release build and _rename_ it to config.json
   
   **Note:** couchdb host must be specified via ip address due to windows platform restrictions.
+
+  **Note 2:** config.json and repos.json files should be placed near cordova.conf (for local Medic instance in most cases this means that they need to be placed in BuildBot master directory).
 
 #Running the System
 - start the master with ~buildbot start master
@@ -144,6 +147,12 @@ The tests use COHO and CLI for as much as possible to ensure that the developer 
 #Configuration Files
 **master.cfg:** The main configuration file for buildbot. It is a python script and defines the triggers, builders and status display.
 It uses both config.json and repos.json to determine which platforms and versions to test.
+
+**projects.conf** Configuration script used to load per-project buildbot configurations.
+
+**cordova.conf** Configuration script that contains cordova project-specific buldbot configuration (Build steps, schedulers, build factories definitions, etc.)
+
+The two files above (_projects.conf_ and _cordova.conf_ are necessary to maintain compatibility with Apache Buildbot configuration files structure)
 
 **config.json:** Used by the buildbot master script and by some of the medic command-line tools. 
 It defines the platforms to test, the current release version, the couchdb url, and the ios keychain. 
