@@ -82,6 +82,8 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
                 log('Write medic.json to autotest folder');
                 var medic_config='{"sha":"'+sha+'","couchdb":"'+couchdb_host+'"}';
                 fs.writeFileSync(path.join(output, '..', '..', 'www','autotest','pages', 'medic.json'),medic_config,'utf-8');
+                // Put medic.json to www to make plugin-test-framework working
+                fs.writeFileSync(path.join(output, '..', '..', 'www', 'medic.json'),medic_config,'utf-8');
                 
                 // patch WindowsStoreAppUtils script to allow app run w/out active desktop/remote session
                 if (build_target == "store80" || build_target == "store") {
