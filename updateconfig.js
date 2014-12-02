@@ -1,9 +1,9 @@
 // /usr/bin/env node
+/*jshint node: true*/
  
 var fs   = require('fs'),
     path = require('path'),
-    config = require('./config'),
-    argv = require('optimist').argv;
+    config = require('./config');
 
 //get parameters, that should been written to config.xml
 var entry_point = config.app.entry,
@@ -29,18 +29,10 @@ if (!fs.existsSync(configFile)){
                 '    <content src="' + entry_point + '"/>\n</widget>';
         }
 
-        // Whitelists support on windows 8 is broken and cause build errors
-        if (argv.windows || argv.windows8){
-            console.warn('Current platform is windows. Removing all whitelist rules.');
-            configContent = configContent.replace(/\s*<access\s+origin=.*\/>/gim, '');
-            //cleanup doubled line ends
-            configContent = configContent.replace('\n\n', '\n');
-        } else {
-            // add whitelisting rule allow access to couch server
-            console.log('Adding whitelist rule for CouchDB host: ' + couch_host);
-            configContent = configContent.split('</widget>').join('') +
-                '    <access origin="' + couch_host + '" />\n</widget>';
-        }
+        // add whitelisting rule allow access to couch server
+        console.log('Adding whitelist rule for CouchDB host: ' + couch_host);
+        configContent = configContent.split('</widget>').join('') +
+            '    <access origin="' + couch_host + '" />\n</widget>';
 
         fs.writeFileSync(configFile, configContent, 'utf-8');
     } catch (e) {
