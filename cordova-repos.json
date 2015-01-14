@@ -4,35 +4,35 @@
     "title" : "Android Master Platform",
     "categories" : ["CORDOVA-ANDROID","CORDOVA-CLI","CORDOVA-PLUGMAN","CORDOVA-COHO","CORDOVA-MSPEC","CORDOVA-TESTMASTER","CORDOVA-JS"],
     "branch" : "master",
-    "builder": "Android",
+    "builder": "cordova-android",
     "platform": "android"
   },
   {
     "title" : "Android Master Plugins",
     "categories" : ["CORDOVA-PLUGIN"],
     "branch" : "master",
-    "builder": "Android",
+    "builder": "cordova-android",
     "platform": "android"
   },
     {
     "title" : "Android Build Windows",
     "categories" : ["CORDOVA-ANDROID","CORDOVA-CLI","CORDOVA-PLUGIN","CORDOVA-COHO","CORDOVA-MSPEC","CORDOVA-TESTMASTER","CORDOVA-JS"],
     "branch" : "master",
-    "builder": "AndroidWin",
+    "builder": "cordova-android-win",
     "platform": "android"
   },
   {
     "title" : "IOS Master Platform",
     "categories" : ["CORDOVA-IOS","CORDOVA-CLI","CORDOVA-PLUGMAN","CORDOVA-COHO","CORDOVA-MSPEC","CORDOVA-TESTMASTER","CORDOVA-JS"],
     "branch" : "master",
-    "builder": "IOS",
+    "builder": "cordova-ios",
     "platform": "ios"
   },
   {
     "title" : "IOS Master Plugins",
     "categories" : ["CORDOVA-PLUGIN"],
     "branch" : "master",
-    "builder": "IOS",
+    "builder": "cordova-ios",
     "platform": "ios"
   }
 ,
@@ -40,14 +40,14 @@
     "title" : "Windows Phone8 master",
     "categories" : ["CORDOVA-WP8","CORDOVA-CLI","CORDOVA-PLUGIN","CORDOVA-COHO","CORDOVA-MSPEC","CORDOVA-TESTMASTER","CORDOVA-JS"],
     "branch" : "master",
-    "builder": ["WP8", "WP8_vs2012_win8"],
+    "builder": ["cordova-wp8", "cordova-wp8-vs2012-win8"],
     "platform": "wp8"
   },
   {
     "title" : "Windows 8 master",
     "categories" : ["CORDOVA-WINDOWS","CORDOVA-CLI","CORDOVA-PLUGIN","CORDOVA-COHO","CORDOVA-MSPEC","CORDOVA-TESTMASTER","CORDOVA-JS"],
     "branch" : "master",
-    "builder": ["Windows", "Windows8_vs2012_win8"],
+    "builder": ["cordova-windows", "cordova-windows8-vs2012-win8"],
     "platform": "windows"
   }
 ,
@@ -55,14 +55,14 @@
     "title" : "BlackBerry Master Platform",
     "categories" : ["CORDOVA-BLACKBERRY","CORDOVA-CLI","CORDOVA-PLUGMAN","CORDOVA-COHO","CORDOVA-MSPEC","CORDOVA-TESTMASTER","CORDOVA-JS"],
     "branch" : "master",
-    "builder": "BlackBerry",
+    "builder": "cordova-blackberry",
     "platform": "blackberry"
   },
   {
     "title" : "BlackBerry Master Plugins",
     "categories" : ["CORDOVA-PLUGIN"],
     "branch" : "master",
-    "builder": "BlackBerry",
+    "builder": "cordova-blackberry",
     "platform": "blackberry"
   }
 ,
@@ -70,21 +70,21 @@
     "title" : "CLI tooling tests",
     "categories" : ["CORDOVA-CLI","CORDOVA-LIB"],
     "branch" : "master",
-    "builder": "Tools_CLI",
+    "builder": "cordova-tools-cli",
     "platform": "ios"
   },
   {
     "title" : "ChromeSpec on Chrome",
     "categories" : ["CORDOVA-CHROMESPEC"],
     "branch" : "master",
-    "builder": "ZChrome_Desktop",
+    "builder": "cordova-zchrome_desktop",
     "platform": "chrome"
   },
   {
     "title" : "ChromeSpec on Android",
     "categories" : ["CORDOVA-CHROMESPEC"],
     "branch" : "master",
-    "builder": "ZChrome_Mobile",
+    "builder": "cordova-zchrome-mobile",
     "platform": "chrome"
   }
 ],
