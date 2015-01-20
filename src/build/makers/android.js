@@ -31,7 +31,7 @@ module.exports = function(output, sha, devices, entry_point, couchdb_cfg, callba
          callback(true);
          return;
      }
-     var pkgname= 'mobilespec';
+     var pkgname= 'MainActivity';
                     // compile
                     log('Compiling.');
                     var ant = 'cd ' + output + ' && '+path.join('.','cordova','build')+' --debug';
@@ -45,7 +45,7 @@ module.exports = function(output, sha, devices, entry_point, couchdb_cfg, callba
                             if( !fs.existsSync(binary_path)){
                               binary_path=path.join(output, 'ant-build', pkgname+'-debug.apk');
                             }
-                            var package = 'org.apache.'+pkgname;
+                            var package = 'org.apache.mobilespec';
                             if (devices) {
                                 // already have a specific set of devices to deploy to
                                 log('deploying to provided devices:'+devices);
