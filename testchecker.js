@@ -61,7 +61,15 @@ module.exports = function(sha, dbHost) {
             console.log("No failures were detected");
             return true;
         } else {
+            console.log("Total failures: " + testResult.mobilespec.failures);
             console.log('Test failures were detected. Open ' + dbHost + '/_utils/document.html?mobilespec_results/' + testResult._id + ' for details');
+            console.log("Failing tests:");
+            testResult.mobilespec.results.forEach(function(result) {
+                if(result.status === "failed") {
+                    console.log(result.fullName);
+                }
+            });
+    
             return false;
         }
     };
