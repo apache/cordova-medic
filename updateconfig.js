@@ -1,6 +1,6 @@
 // /usr/bin/env node
 /*jshint node: true*/
- 
+
 var fs   = require('fs'),
     path = require('path'),
     config = require('./config');
@@ -8,6 +8,12 @@ var fs   = require('fs'),
 //get parameters, that should been written to config.xml
 var entry_point = config.app.entry,
     couch_host = config.couchdb.host;
+
+// WORKAROUND:
+//            on iOS, the entry point is unique; hard-code it explicitly for now
+if (os.platform == 'darwin') {
+    entry_point = 'cdvtests/index.html';
+}
 
 var configFile = path.join('mobilespec', 'config.xml');
 if (!fs.existsSync(configFile)){
