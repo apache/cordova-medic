@@ -37,7 +37,7 @@ module.exports = function(output,lib_location,test_dir, sha, devices, entry_poin
     log('Compiling.');
     log(output);
 
-    var mobileSpecDir = path.join(output, '../', '../');
+    var mobileSpecDir = path.join(output, '..', '..');
     log(mobileSpecDir);
 
     var buildCommand = 'cd ' + mobileSpecDir + ' && ./cordova build';

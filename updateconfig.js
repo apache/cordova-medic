@@ -9,12 +9,6 @@ var fs   = require('fs'),
 var entry_point = config.app.entry,
     couch_host = config.couchdb.host;
 
-// WORKAROUND:
-//            on iOS, the entry point is unique; hard-code it explicitly for now
-if (os.platform == 'darwin') {
-    entry_point = 'cdvtests/index.html';
-}
-
 var configFile = path.join('mobilespec', 'config.xml');
 if (!fs.existsSync(configFile)){
     console.log('Config.xml file doesn\'t exists');
