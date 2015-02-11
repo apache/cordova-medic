@@ -34,8 +34,9 @@ module.exports = function(output, sha, devices, entry_point, couchdb_cfg, callba
      var pkgname= 'MainActivity';
                     // compile
                     log('Compiling.');
-                    var ant = 'cd ' + output + ' && '+path.join('.','cordova','build')+' --debug';
-                    shell.exec(ant, {silent:true,async:true},function(code, compile_output) {
+                    var buildCmd = 'cd ' + output + ' && '+path.join('.','cordova','build')+' --debug';
+                    log('shell exec ' + buildCmd);
+                    shell.exec(buildCmd, {silent:true,async:true},function(code, compile_output) {
                         log('Compile exit:'+code);
                         if (code > 0) {
                             error_writer('android', sha, 'Compilation error', compile_output);
@@ -45,6 +46,11 @@ module.exports = function(output, sha, devices, entry_point, couchdb_cfg, callba
                             if( !fs.existsSync(binary_path)){
                               binary_path=path.join(output, 'ant-build', pkgname+'-debug.apk');
                             }
+                            // gradle apk
+                            if( !fs.existsSync(binary_path)){
+                              binary_path=path.join(output, 'build', 'outputs', 'apk', 'android-debug.apk');
+                            }
+                            log("binary path " + binary_path);
                             var package = 'org.apache.mobilespec';
                             if (devices) {
                                 // already have a specific set of devices to deploy to
