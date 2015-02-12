@@ -5,3 +5,4 @@ posts
 .DS_STORE
 /master/
 /slave_windows/
+Makefile*
