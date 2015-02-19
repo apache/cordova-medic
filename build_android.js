@@ -1,41 +1,47 @@
-var path = require ('path');
-var shell = require('shelljs');
-var buildinfo = require('./buildinfo');
-var config = require('./config');
-var android  = require('./src/build/makers/android');
-var argv = require('optimist').argv;
-var testcheck = require('./testchecker');
+var path         = require('path'),
+    buildinfo    = require('./buildinfo'),
+    config       = require('./config'),
+    android      = require('./src/build/makers/android'),
+    argv         = require('optimist').argv,
+    testcheck    = require('./testchecker'),
+    error_writer = require('./src/build/makers/error_writer');
 
 // this assumes that you start it in the sandbox
 
-var TEST_DIR=process.cwd();
-var BRANCH='master';
-var TOOL_DIR=path.join(TEST_DIR,'medic');
-var MSPEC_DIR=path.join(TEST_DIR,'mobilespec');
+var TEST_DIR = process.cwd(),
+    BRANCH = 'master',
+    MSPEC_DIR = path.join(TEST_DIR, 'mobilespec'),
+    TEST_OK = true;
 
-var TEST_OK=true;
+if (argv.branch) {
+    BRANCH = argv.branch;
+}
 
-if(argv.branch) BRANCH=argv.branch;
+var output_location = path.join(MSPEC_DIR, 'platforms', 'android'),
+    test_timeout = config.app.timeout || 10 * 60;
 
-var output_location = path.join(MSPEC_DIR,'platforms','android');
-
-buildinfo('Android', BRANCH, function (error, sha ) {
-    if(error) {
-        TEST_OK=false;
+buildinfo('Android', BRANCH, function (error, sha) {
+    if (error) {
+        TEST_OK = false;
     } else {
-        android(output_location, sha,'', config.app.entry, config.couchdb, function(err){
-            if(err) {
-                console.log('Android test prepare failed');
-                TEST_OK=false;
-            } else {
-                console.log('Android tests complete');
-                TEST_OK = true;
-            }
-       });
+        android(output_location, sha, config.couchdb, test_timeout)
+            .then(function () {
+                return testcheck(sha, config.couchdb.host);
+            }, function (err) {
+                TEST_OK = false;
+                error_writer('android', sha, 'Android tests execution failed.', err);
+            }).then(function (testCheckResult) {
+                TEST_OK = testCheckResult;
+
+                if (TEST_OK) {
+                    console.log('Android test execution completed');
+                }
+            });
     }
 });
 
 process.once('exit', function () {
-    if(!TEST_OK) process.exit(1);
+    if (!TEST_OK) {
+        process.exit(1);
+    }
 });
-
