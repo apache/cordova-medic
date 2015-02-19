@@ -1,77 +1,136 @@
 var shell        = require('shelljs'),
     path         = require('path'),
     error_writer = require('./error_writer'),
-    n            = require('ncallbacks'),
-    deploy       = require('./android/deploy'),
-    scan         = require('./android/devices'),
     fs           = require('fs'),
-    mspec        = require('./mobile_spec');
+    q            = require('q'),
+    testRunner   = require('./testRunner'),
+    device       = require('../../../../mobilespec/platforms/android/cordova/lib/device'),
+    emulator     = require('../../../../mobilespec/platforms/android/cordova/lib/emulator');
 
-module.exports = function(output, sha, devices, entry_point, couchdb_cfg, callback) {
+module.exports = function (output, sha, couchdb_cfg, test_timeout) {
+
+    var noBuildMarker = '<!-- no build marker -->',
+        manifestFile = path.join('platforms', 'android', 'bin', 'AndroidManifest.xml'),
+        mobilespecPath = path.join(output, '..', '..');
+
     function log(msg) {
         console.log('[ANDROID] ' + msg + ' (sha: ' + sha + ')');
     }
-      try {
-         // make sure android app got created first.
-         if (!fs.existsSync(output)) {
-              throw new Error('create must have failed as output path does not exist.');
-         }
-         var mspec_out = path.join(output, 'assets', 'www');
-         // add the medic configuration (sha,host) to destination folder
-         var medic_config='{"sha":"'+sha+'","couchdb":"'+couchdb_cfg.host+'","couchdbext":"'+couchdb_cfg.exthost+'"}';
-         fs.writeFileSync(path.join(output, 'assets', 'www','autotest','pages', 'medic.json'),medic_config,'utf-8');
-         log('Modifying Cordova android application.');
 
-         var configFile = path.join(output, 'res', 'xml', 'config.xml');
-         fs.writeFileSync(configFile, fs.readFileSync(configFile, 'utf-8').replace(/<content\s*src=".*"/gi, '<content src="' +entry_point + '"'), 'utf-8');
-         // make sure the couch db server is whitelisted
-         fs.writeFileSync(configFile, fs.readFileSync(configFile, 'utf-8').replace(/<access origin="http:..audio.ibeat.org" *.>/gi,'<access origin="http://audio.ibeat.org" /><access origin="'+couchdb_cfg.host+'" />', 'utf-8'));
-     } catch (e) {
-         error_writer('android', sha, 'Exception thrown modifying Android mobile spec application.', e.message);
-         callback(true);
-         return;
-     }
-     var pkgname= 'MainActivity';
-                    // compile
-                    log('Compiling.');
-                    var buildCmd = 'cd ' + output + ' && '+path.join('.','cordova','build')+' --debug';
-                    log('shell exec ' + buildCmd);
-                    shell.exec(buildCmd, {silent:true,async:true},function(code, compile_output) {
-                        log('Compile exit:'+code);
-                        if (code > 0) {
-                            error_writer('android', sha, 'Compilation error', compile_output);
-                            callback(true);
-                        } else {
-                            var binary_path = path.join(output, 'bin', pkgname+'-debug.apk');
-                            if( !fs.existsSync(binary_path)){
-                              binary_path=path.join(output, 'ant-build', pkgname+'-debug.apk');
-                            }
-                            // gradle apk
-                            if( !fs.existsSync(binary_path)){
-                              binary_path=path.join(output, 'build', 'outputs', 'apk', 'android-debug.apk');
-                            }
-                            log("binary path " + binary_path);
-                            var package = 'org.apache.mobilespec';
-                            if (devices) {
-                                // already have a specific set of devices to deploy to
-                                log('deploying to provided devices:'+devices);
-                                deploy(sha, devices, binary_path, package, callback);
-                            } else {
-                                // get list of connected devices
-                                scan(function(err, devices) {
-                                    if (err) {
-                                        // Could not obtain device list...
-                                        var error_message = devices;
-                                        log(error_message);
-                                        callback(true);
-                                    } else {
-                                        log('deploying to discovered devices:'+devices);
-                                        deploy(sha, devices, binary_path, package, callback);
-                                    }
-                                });
-                            }
-                        }
-                    });
+    function prepareMobileSpec() {
+        var d = q.defer();
+        try {
+            // make sure android app got created first.
+            if (!fs.existsSync(output)) {
+                throw new Error('create must have failed as output path does not exist.');
+            }
+            // add the medic configuration (sha, host) to destination folder
+            var medic_config = '{"sha":"' + sha + '","couchdb":"' + couchdb_cfg.host + '","couchdbext":"' + couchdb_cfg.exthost + '"}';
+            fs.writeFileSync(path.join(output, '..', '..', 'www', 'medic.json'), medic_config, 'utf-8');
+            d.resolve();
+        } catch (e) {
+            error_writer('android', sha, 'Exception thrown modifying Android mobile spec application.', e.message);
+            d.reject();
+        }
+        return d.promise;
+    }
 
+    function build() {
+        var d = q.defer(),
+            build_cmd = path.join('..', 'cordova-cli', 'bin', 'cordova') + ' build -- --debug --ant';
+
+        log('Building...');
+
+        shell.exec(build_cmd, {
+            silent : true,
+            async : true
+        }, function (code, output) {
+            if (code > 0) {
+                d.reject('Build error! Exit code: ' + code + ', output: \n ' + output);
+            } else {
+                try {
+                    // appending no-build marker so that we could check later
+                    // that `cordova run -- --nobuild` works
+                    fs.appendFileSync(manifestFile, noBuildMarker, 'utf-8');
+                } catch (err) {
+                    log('Error while appending no-build marker to android manifest');
+                }
+                d.resolve();
+            }
+        });
+
+        return d.promise;
+    }
+
+    // makes sure if there is emulator started
+    // if there isn't, starts one
+    // if there are no emulator images, rejects promise
+    function prepareEmulator() {
+        return emulator.list_images()
+            .then(function (images) {
+                return (!images || images.length === 0) ? q.reject('No emulator images detected, please create one. You can do so by using \'android avd\' command.') : emulator.list_started();
+            })
+            .then(function (started) {
+                if (!started || started.length === 0) {
+                    return emulator.best_image()
+                        .then(function (best) {
+                            shell.cd(path.join(mobilespecPath, '..'));
+                            return emulator.start(best.name);
+                        })
+                        .then(function () {
+                            shell.cd(mobilespecPath);
+                        });
+                }
+            });
+    }
+
+    // makes sure if there is device connected
+    // if there are no devices, starts an emulator
+    function prepareDevice() {
+        return device.list().then(function (device_list) {
+            if (!device_list || device_list.length === 0) {
+                return prepareEmulator();
+            }
+        });
+    }
+
+    function run() {
+        var d = q.defer();
+        log('Running app...');
+        var cmd = path.join('..', 'cordova-cli', 'bin', 'cordova') + ' run android -- --nobuild';
+        shell.exec(cmd, {
+            silent : true,
+            async : true
+        }, function (code, output) {
+            if ((code > 0) || (output.indexOf('ERROR') >= 0)) {
+                log('Error launching mobile-spec on android, code: ' + code + ', output:\n' + output);
+                d.reject('Error launching mobile-spec on android');
+            } else {
+                d.resolve();
+            }
+        });
+        return d.promise;
+    }
+
+    function testNoBuild() {
+        try {
+            var manifestContent = fs.readFileSync(manifestFile, 'utf-8');
+            if (manifestContent.indexOf(noBuildMarker) === -1) {
+                throw new Error('NoBuild parameter test failed.');
+            }
+        } catch (err) {
+            log('error in testNoBuild: ' + JSON.stringify(err));
+        }
+    }
+
+    return prepareMobileSpec()
+        .then(function () {
+            shell.cd(mobilespecPath);
+        }).then(build)
+        .then(prepareDevice)
+        .then(run)
+        .then(function () {
+            log('Waiting for tests to complete...');
+            return testRunner.waitTestsCompleted(sha, 1000 * test_timeout);
+        }).then(testNoBuild);
 }
-
