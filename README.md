@@ -31,6 +31,8 @@ medic requires grunt-cli npm package to be installed globally. You can install i
   
   To test access to CouchDB portal try to open \<CouchDB host IP\>:5984 from browser
 
+  **Note:** don't use local IPs (e.g. localhost, 127.0.0.1) for CouchDB as it will produce connection problems for devices and emulators (they will resolve them according to their context)
+
 3. Create the following three databases (functionality for creating of them should be available on \<CouchDB host IP\>:5984/_utils/):
   - build_errors
   - mobilespec_results
@@ -69,14 +71,14 @@ medic requires grunt-cli npm package to be installed globally. You can install i
   - master.cfg
   - projects.conf
   - cordova.conf
-  - repos.json
-  - config.json.sample
+  - cordova-repos.json
+  - cordova-config.json.sample
 
-  Then update config.json.sample with CouchDB host address, test platforms, ios keychain, current release build and _rename_ it to config.json
+  Then update cordova-config.json.sample with CouchDB host address, test platforms, ios keychain, current release build and _rename_ it to cordova-config.json
   
   **Note:** couchdb host must be specified via ip address due to windows platform restrictions.
 
-  **Note 2:** config.json and repos.json files should be placed near cordova.conf (for local Medic instance in most cases this means that they need to be placed in BuildBot master directory).
+  **Note 2:** cordova-config.json and cordova-repos.json files should be placed near cordova.conf (for local Medic instance in most cases this means that they need to be placed in BuildBot master directory).
 
 #Running the System
 - start the master with ~buildbot start master
@@ -89,7 +91,7 @@ medic requires grunt-cli npm package to be installed globally. You can install i
 
     **Note:**  on Windows slave instance must be run under administrator; git/bin folder must be added to PATH so that rm, cp, mkdir commands are available from the command prompt.
 - point your browser at http://localhost:8010/waterfall to see the buildbot state
-- point your browser to the couchDB http://localhost:5984/_utils/index.html to look at detailed test results
+- point your browser to the couchDB http://\<CouchDB host IP\>:5984/_utils/index.html to look at detailed test results
 
 #Controlling
 - restart the master with buildbot restart master
@@ -97,9 +99,9 @@ medic requires grunt-cli npm package to be installed globally. You can install i
 - force a test by clicking on the test link at the top of the buildbot display and then 'force build'
 
 #Configuring
-- all changes for a local install should only require edits to config.json in the buildbot base directory
-- new platforms, test procedures, build steps, etc require edits to master.cfg and repos.json which should still be global (all platforms)
-- whenever config.json, repos.json or master.cfg changes, you need to restart the master (not slaves)
+- all changes for a local install should only require edits to cordova-config.json in the buildbot base directory
+- new platforms, test procedures, build steps, etc require edits to master.cfg, cordova.conf and cordova-repos.json which should still be global (all platforms)
+- whenever cordova-config.json, cordova-repos.json, cordova.conf or master.cfg changes, you need to restart the master (not slaves)
 
 #Overview
 Buildbot polls all the repositories every few minutes to look for changes. Whenever a change is detected, those changes trigger one or more build requests. 
@@ -133,10 +135,6 @@ every command has a link to its output on the main display. When a mobile spec t
   - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in).
   - There are two separate builders, which performs builds in different environments (VS2012 + MSBuild 4.0 / VS2013 + MSBuild 12.0)
 
-- Windows8 tests:
-  - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in)
-  - Tests are executed on Local Machine, no support to run tests on connected device.
-
 - Windows Universal platform tests:
   - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in)
   - Tests are executed on Local Machine, mobilespec app for --phone target is launched on emulator. Running mobilespec app on attached devices not supported yet.
@@ -146,7 +144,7 @@ The tests use COHO and CLI for as much as possible to ensure that the developer 
 
 #Configuration Files
 **master.cfg:** The main configuration file for buildbot. It is a python script and defines the triggers, builders and status display.
-It uses both config.json and repos.json to determine which platforms and versions to test.
+It uses both cordova-config.json and cordova-repos.json to determine which platforms and versions to test.
 
 **projects.conf** Configuration script used to load per-project buildbot configurations.
 
@@ -154,11 +152,11 @@ It uses both config.json and repos.json to determine which platforms and version
 
 The two files above (_projects.conf_ and _cordova.conf_ are necessary to maintain compatibility with Apache Buildbot configuration files structure)
 
-**config.json:** Used by the buildbot master script and by some of the medic command-line tools. 
+**cordova-config.json:** Used by the buildbot master script and by some of the medic command-line tools. 
 It defines the platforms to test, the current release version, the couchdb url, and the ios keychain. 
 The release version specified here is used anywhere the keyword "RELEASE" is used in a test definition.
 
-**repos.json:** Contains the definitions for the tests (schedulers) and the various repositories in the project. 
+**cordova-repos.json:** Contains the definitions for the tests (schedulers) and the various repositories in the project. 
 Tests define the components and branches that should trigger a test run. 
 This requires multiple triggers for each test path since a build might use tools from master, platforms from release and plugins from dev.
 
