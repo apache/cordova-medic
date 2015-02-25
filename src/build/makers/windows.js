@@ -7,7 +7,8 @@ var shell        = require('shelljs'),
     q            = require('q'),
     testRunner   = require('./testRunner'),
     util         = require('util');
-
+    devices      = require('../../../../mobilespec/platforms/windows/cordova/lib/package')
+    
 module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, build_target) {
 
     var target_folder = ((build_target == 'store') ? 'windows' : ((build_target == 'store80') ? 'windows80' : 'phone')),
@@ -15,17 +16,51 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
         manifestFile = path.join('platforms', 'windows', 'build', target_folder, 'debug', 'anycpu', 'AppxManifest.xml');
     
     build_target = (build_target == 'store' || build_target == 'store80') ? 'win' : build_target;
-
-
+    
+    var target = '';
+    var targetDevice;
+    
+    function getDevices() {
+        var d = q.defer();
+        var listOfDevices = null;
+        if(target_folder == 'phone') {
+            devices.listDevices().then(function (deviceList){
+             listOfDevices = deviceList;
+            d.resolve(listOfDevices);
+            });
+        } else {
+            d.resolve();
+        }
+        return d.promise;
+    }
+    
+    function getRandomDevice(listOfDevices) {
+        
+        if(target_folder == 'phone') {
+            var deviceList = ((listOfDevices).toString()).split(',');
+            var deviceNumber = deviceList.length >= 2 ? 1 : 0;
+            targetDevice = deviceList[deviceNumber];
+            log("Target device: " + targetDevice);
+        }
+        
+        return;
+    }
+    
     function run() {
         var d = q.defer();
-        log('Running app...');       
-        var cmd = '..\\cordova-cli\\bin\\cordova.cmd run windows -- --' + build_target + ' --nobuild',
+        log('Running app...');
+        var target = '';
+        
+        if(target_folder == 'phone') {
+            target = ' --target=' + '"' + targetDevice + '"';
+        }
+        
+        var cmd = '..\\cordova-cli\\bin\\cordova.cmd run windows -- --' + build_target + ' --nobuild' + target,
             logFile = sha + '.log',
             errFile = sha + '.err',
             endFile = sha + '.end',
             runner = 'run.bat';
-
+        
         // create commands that should be started from bat file:
         //  1. cd to project folder
         //  2. start 'cmd' defined earlier and redirect its stdout and stderr to files
@@ -124,11 +159,20 @@ module.exports = function(output, sha, entry_point, couchdb_host, test_timeout, 
             throw new Error('NoBuild parameter test failed.');
         }
     }
+    
+    function testTarget() {
+        var ps = "powershell" + ' "' + "Get-VM | Where-Object {$_.State –eq 'Running'} " + '"';
+        var pscontent = shell.exec(ps);
+
+        if (pscontent.output.indexOf(targetDevice) === -1) {
+            throw new Error('Target parameter test failed.');
+        }
+    }
 
     return prepareMobileSpec().then(function() {
             shell.cd(path.join(output, '..', '..'));
             return build();
-        }).then(run).then(function() {
+        }).then(getDevices).then(getRandomDevice).then(run).then(function() {
             return testRunner.waitTestsCompleted(sha, 1000 * test_timeout);
-        }).then(testNoBuild);
+        }).then(testNoBuild).then(testTarget);
 };
