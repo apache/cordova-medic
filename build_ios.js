@@ -1,41 +1,47 @@
-var path = require ('path');
-var shell = require('shelljs');
-var buildinfo = require('./buildinfo');
-var config = require('./config');
-var ios  = require('./src/build/makers/ios');
-var argv = require('optimist').argv;
-var testcheck = require('./testchecker');
+var path            = require('path'),
+    buildinfo       = require('./buildinfo'),
+    config          = require('./config'),
+    ios             = require('./src/build/makers/ios'),
+    argv            = require('optimist').argv,
+    testcheck       = require('./testchecker'),
+    createMedicJson = require('./src/utils/createMedicJson');
 
 // this assumes that you start it in the sandbox
 
-var TEST_DIR=process.cwd();
-var BRANCH='master';
-var TOOL_DIR=path.join(TEST_DIR,'medic');
-var MSPEC_DIR=path.join(TEST_DIR,'mobilespec');
-var output_location = path.join(MSPEC_DIR,'platforms','ios');
-var library_location = path.join(TEST_DIR,'cordova-ios');
+var branch = 'master',
+    mspec_dir = path.join(process.cwd(), 'mobilespec'),
+    output_location = path.join(mspec_dir, 'platforms', 'ios'),
+    test_timeout = config.app.timeout || 10 * 60,
+    TEST_OK = true;
 
-var TEST_OK=true;
+if (argv.branch) {
+    branch = argv.branch;
+}
 
-if(argv.branch) BRANCH=argv.branch;
-
-buildinfo('ios', BRANCH, function (error, sha ) {
-    if(error) {
-               TEST_OK=false;
+buildinfo('ios', branch, function (error, sha) {
+    if (error) {
+        TEST_OK = false;
     } else {
-       ios(output_location, library_location,TOOL_DIR, sha,'', config.app.entry, config.couchdb, function(err){
-           if(err) {
-               console.log('iOS test prepare failed')
-               TEST_OK=false;
-           } else {
-               console.log('iOS tests complete')
-               TEST_OK = true;
-           }
-       });
+        // add medic configuration (sha, host) to destination folder
+        createMedicJson(path.join(mspec_dir, 'www'), sha, config);
+
+        ios(output_location, sha, test_timeout)
+            .then(function () {
+                return testcheck(sha, config.couchdb.host);
+            }, function (err) {
+                TEST_OK = false;
+                error_writer('ios', sha, 'iOS tests execution failed.', err);
+            }).then(function (testCheckResult) {
+                TEST_OK = testCheckResult;
+                if (TEST_OK) {
+                    console.log('ios test execution completed');
+                }
+            });
     }
 });
 
 process.once('exit', function () {
-    if(!TEST_OK) process.exit(1);
+    if (!TEST_OK) {
+        process.exit(1);
+    }
 });
-
