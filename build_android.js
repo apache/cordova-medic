@@ -1,10 +1,11 @@
-var path         = require('path'),
-    buildinfo    = require('./buildinfo'),
-    config       = require('./config'),
-    android      = require('./src/build/makers/android'),
-    argv         = require('optimist').argv,
-    testcheck    = require('./testchecker'),
-    error_writer = require('./src/build/makers/error_writer');
+var path            = require('path'),
+    buildinfo       = require('./buildinfo'),
+    config          = require('./config'),
+    android         = require('./src/build/makers/android'),
+    argv            = require('optimist').argv,
+    testcheck       = require('./testchecker'),
+    error_writer    = require('./src/build/makers/error_writer'),
+    createMedicJson = require('./src/utils/createMedicJson');
 
 // this assumes that you start it in the sandbox
 
@@ -24,10 +25,13 @@ buildinfo('Android', BRANCH, function (error, sha) {
     if (error) {
         TEST_OK = false;
     } else {
-        android(output_location, sha, config.couchdb, test_timeout)
-            .then(function () {
+        // add medic configuration (sha, host) to destination folder
+        createMedicJson(path.join(MSPEC_DIR, 'www'), sha, config);
+
+        android(output_location, sha, test_timeout)
+            .then(function onSuccess() {
                 return testcheck(sha, config.couchdb.host);
-            }, function (err) {
+            }, function onError(err) {
                 TEST_OK = false;
                 error_writer('android', sha, 'Android tests execution failed.', err);
             }).then(function (testCheckResult) {

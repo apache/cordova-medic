@@ -7,7 +7,7 @@ var shell        = require('shelljs'),
     device       = require('../../../../mobilespec/platforms/android/cordova/lib/device'),
     emulator     = require('../../../../mobilespec/platforms/android/cordova/lib/emulator');
 
-module.exports = function (output, sha, couchdb_cfg, test_timeout) {
+module.exports = function (output, sha, test_timeout) {
 
     var noBuildMarker = '<!-- no build marker -->',
         manifestFile = path.join('platforms', 'android', 'bin', 'AndroidManifest.xml'),
@@ -15,24 +15,6 @@ module.exports = function (output, sha, couchdb_cfg, test_timeout) {
 
     function log(msg) {
         console.log('[ANDROID] ' + msg + ' (sha: ' + sha + ')');
-    }
-
-    function prepareMobileSpec() {
-        var d = q.defer();
-        try {
-            // make sure android app got created first.
-            if (!fs.existsSync(output)) {
-                throw new Error('create must have failed as output path does not exist.');
-            }
-            // add the medic configuration (sha, host) to destination folder
-            var medic_config = '{"sha":"' + sha + '","couchdb":"' + couchdb_cfg.host + '","couchdbext":"' + couchdb_cfg.exthost + '"}';
-            fs.writeFileSync(path.join(output, '..', '..', 'www', 'medic.json'), medic_config, 'utf-8');
-            d.resolve();
-        } catch (e) {
-            error_writer('android', sha, 'Exception thrown modifying Android mobile spec application.', e.message);
-            d.reject();
-        }
-        return d.promise;
     }
 
     function build() {
@@ -123,14 +105,13 @@ module.exports = function (output, sha, couchdb_cfg, test_timeout) {
         }
     }
 
-    return prepareMobileSpec()
-        .then(function () {
-            shell.cd(mobilespecPath);
-        }).then(build)
+    shell.cd(mobilespecPath);
+
+    return build()
         .then(prepareDevice)
         .then(run)
         .then(function () {
             log('Waiting for tests to complete...');
             return testRunner.waitTestsCompleted(sha, 1000 * test_timeout);
         }).then(testNoBuild);
-}
+};
