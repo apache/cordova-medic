@@ -90,6 +90,8 @@ medic requires grunt-cli npm package to be installed globally. You can install i
     - buildslave start slave_windows
 
     **Note:**  on Windows slave instance must be run under administrator; git/bin folder must be added to PATH so that rm, cp, mkdir commands are available from the command prompt.
+    
+    **Note:**  if you are using Android emulator, please make sure that it has SD card size bigger than 0 (see [CB-8535](https://issues.apache.org/jira/browse/CB-8535)).
 - point your browser at http://localhost:8010/waterfall to see the buildbot state
 - point your browser to the couchDB http://\<CouchDB host IP\>:5984/_utils/index.html to look at detailed test results
 
