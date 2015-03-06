@@ -1,12 +1,11 @@
 var shell      = require('shelljs'),
     path       = require('path'),
     fs         = require('fs'),
-    mspec      = require('./mobile_spec'),
     q          = require('q'),
     testRunner = require('./testRunner'),
     util       = require('util');
 
-module.exports = function (output, sha, entry_point, test_timeout, build_target) {
+module.exports = function (output, sha, test_timeout, build_target) {
 
     var target_folder = ((build_target === 'store') ? 'windows' : ((build_target === 'store80') ? 'windows80' : 'phone')),
         noBuildMarker = '<!-- no build marker -->',
@@ -62,39 +61,21 @@ module.exports = function (output, sha, entry_point, test_timeout, build_target)
 
     function prepareMobileSpec() {
         // make sure windows app got created first.
-        var defer = q.defer(),
-            mspec_out = path.join(output, 'www');
-        try {
-            if (!fs.existsSync(output)) {
-                throw new Error('create must have failed as output path does not exist.');
-            }
-
-            log('Modifying Cordova Mobilespec application at:' + mspec_out);
-
-            mspec(mspec_out, sha, '', entry_point, function (err) {
-                if (err) {
-                    throw new Error('Error while modifying Windows mobile spec application.');
-                }
-
-                // patch WindowsStoreAppUtils script to allow app run w/out active desktop/remote session
-                if (build_target === "win") {
-                    log('Patching WindowsStoreAppUtils to allow app to be run in automated mode');
-                    shell.cp('-f', path.join(output, '..', '..', '..', 'medic', 'src', 'utils', 'EnableDebuggingForPackage.ps1'),
-                             path.join(output, 'cordova', 'lib'));
-                    shell.sed('-i', /^\s*\$appActivator .*$/gim,
-                              '$&\n' +
-                              '    powershell ' + path.join(output, 'cordova', 'lib', 'EnableDebuggingForPackage.ps1') + ' $$ID\n' +
-                              '    $Ole32 = Add-Type -MemberDefinition \'[DllImport("Ole32.dll")]public static extern int CoAllowSetForegroundWindow(IntPtr pUnk, IntPtr lpvReserved);\' -Name \'Ole32\' -Namespace \'Win32\' -PassThru\n' +
-                              '    $Ole32::CoAllowSetForegroundWindow([System.Runtime.InteropServices.Marshal]::GetIUnknownForObject($appActivator), [System.IntPtr]::Zero)',
-                              path.join(output, 'cordova', 'lib', 'WindowsStoreAppUtils.ps1'));
-                }
-
-                defer.resolve();
-            });
-        } catch (e) {
-            defer.reject(e);
+        if (!fs.existsSync(output)) {
+            throw new Error('create must have failed as output path does not exist.');
         }
-        return defer.promise;
+        // patch WindowsStoreAppUtils script to allow app run w/out active desktop/remote session
+        if (build_target === "win") {
+            log('Patching WindowsStoreAppUtils to allow app to be run in automated mode');
+            shell.cp('-f', path.join(output, '..', '..', '..', 'medic', 'src', 'utils', 'EnableDebuggingForPackage.ps1'),
+                     path.join(output, 'cordova', 'lib'));
+            shell.sed('-i', /^\s*\$appActivator .*$/gim,
+                      '$&\n' +
+                      '    powershell ' + path.join(output, 'cordova', 'lib', 'EnableDebuggingForPackage.ps1') + ' $$ID\n' +
+                      '    $Ole32 = Add-Type -MemberDefinition \'[DllImport("Ole32.dll")]public static extern int CoAllowSetForegroundWindow(IntPtr pUnk, IntPtr lpvReserved);\' -Name \'Ole32\' -Namespace \'Win32\' -PassThru\n' +
+                      '    $Ole32::CoAllowSetForegroundWindow([System.Runtime.InteropServices.Marshal]::GetIUnknownForObject($appActivator), [System.IntPtr]::Zero)',
+                      path.join(output, 'cordova', 'lib', 'WindowsStoreAppUtils.ps1'));
+        }
     }
 
     function build() {
@@ -114,11 +95,11 @@ module.exports = function (output, sha, entry_point, test_timeout, build_target)
         }
     }
 
-    return prepareMobileSpec()
-        .then(function () {
-            shell.cd(path.join(output, '..', '..'));
-            return build();
-        }).then(run).then(function () {
+    prepareMobileSpec();
+    shell.cd(path.join(output, '..', '..'));
+    build();
+
+    return run().then(function () {
             return testRunner.waitTestsCompleted(sha, 1000 * test_timeout);
         }).then(testNoBuild);
 };

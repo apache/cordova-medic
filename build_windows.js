@@ -60,7 +60,7 @@ buildinfo('Windows', BRANCH, function (error, sha) {
         // add medic configuration (sha, host) to destination folder
         createMedicJson(path.join(MSPEC_DIR, 'www'), sha, config);
 
-        windows(output_location, sha, config.app.entry, test_timeout, build_target)
+        windows(output_location, sha, test_timeout, build_target)
             .then(function onSuccess() {
                 return testcheck(sha, config.couchdb.host);
             }, function onError(err) {

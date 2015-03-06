@@ -31,7 +31,7 @@ buildinfo('WP8', BRANCH, function (error, sha) {
         // timeout to execute tests, 10 min by default
         var test_timeout = config.app.timeout || 10 * 60;
 
-        wp8(output_location, sha, config.wp8.target, config.app.entry, test_timeout)
+        wp8(output_location, sha, config.wp8.target, test_timeout)
             .then(function onSuccess() {
                 return testcheck(sha, config.couchdb.host);
             }, function onError(err) {
