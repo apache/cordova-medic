@@ -67,7 +67,7 @@ module.exports = function (output, sha, test_timeout, build_target) {
         // patch WindowsStoreAppUtils script to allow app run w/out active desktop/remote session
         if (build_target === "win") {
             log('Patching WindowsStoreAppUtils to allow app to be run in automated mode');
-            shell.cp('-f', path.join(output, '..', '..', '..', 'medic', 'src', 'utils', 'EnableDebuggingForPackage.ps1'),
+            shell.cp('-f', path.join(output, '..', '..', '..', 'cordova-medic', 'src', 'utils', 'EnableDebuggingForPackage.ps1'),
                      path.join(output, 'cordova', 'lib'));
             shell.sed('-i', /^\s*\$appActivator .*$/gim,
                       '$&\n' +

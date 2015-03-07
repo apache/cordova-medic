@@ -1,8 +1,3 @@
-temp
 node_modules
-lib
-posts
-.DS_STORE
-/master/
-/slave_windows/
-Makefile*
+cordova-config.json
+private.py

@@ -3,30 +3,16 @@
   "version": "0.2.3",
   "description": "continuous integration setup for Apache Cordova",
   "author": "Fil Maj <maj.fil@gmail.com> (http://filmaj.ca)",
-  "main": "dashboard.js",
-  "scripts": {
-    "start": "node dashboard.js"
-  },
   "dependencies": {
-    "shelljs": "0.1.2",
-    "request": "2.12.0",
+    "commander": "^2.5.0",
     "follow": "0.8.0",
-    "ncallbacks": "1.0.0",
-    "mime": "1.2.9",
-    "optimist": "0.3.5",
     "glob":"3.2.6",
-    "q":"0.8.6"
-  },
-  "devDependencies": {
-    "elementtree": "0.1.4",
-    "readdirp": "0.2.1",
-    "forever": "0.10.0",
-    "semver": "1.1.0",
-    "jasmine-node": ">=1.0.0",
-    "memwatch": ""
-  },
-  "scripts": {
-    "install": "node install.js"
+    "mime": "1.2.9",
+    "ncallbacks": "1.0.0",
+    "optimist": "0.3.5",
+    "q":"0.8.6",
+    "request": "2.12.0",
+    "shelljs": "^0.3.0"
   },
   "subdomain": "cordova.medic",
   "engines": {

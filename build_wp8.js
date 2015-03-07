@@ -11,7 +11,7 @@ var path            = require('path'),
 
 var TEST_DIR = process.cwd().replace(/\\/g, '\\\\'),
     BRANCH = 'master',
-    TOOL_DIR = path.join(TEST_DIR, 'medic'),
+    TOOL_DIR = path.join(TEST_DIR, 'cordova-medic'),
     MSPEC_DIR = path.join(TEST_DIR, 'mobilespec'),
     TEST_OK = true;
 
@@ -33,7 +33,7 @@ buildinfo('WP8', BRANCH, function (error, sha) {
 
         wp8(output_location, sha, config.wp8.target, test_timeout)
             .then(function onSuccess() {
-                return testcheck(sha, config.couchdb.host);
+                return testcheck(sha, config.couchdb.uri);
             }, function onError(err) {
                 TEST_OK = false;
                 error_writer('wp8', sha, 'WP8 tests execution failed.', err);

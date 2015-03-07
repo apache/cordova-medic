@@ -10,7 +10,7 @@ var testcheck = require('./testchecker');
 
 var TEST_DIR=process.cwd();
 var BRANCH='master';
-var TOOL_DIR=path.join(TEST_DIR,'medic');
+var TOOL_DIR=path.join(TEST_DIR,'cordova-medic');
 var MSPEC_DIR=path.join(TEST_DIR,'mobilespec');
 
 var TEST_OK=true;
@@ -23,7 +23,7 @@ buildinfo('BlackBerry', BRANCH, function (error, sha ) {
     if(error) {
         TEST_OK=false;
     } else {
-        blackberry10(output_location, sha, config.app.entry, config.couchdb.host, function(err){
+        blackberry10(output_location, sha, config.app.entry, config.couchdb.uri, function(err){
             if(err) {
                 console.log('BlackBerry test prepare failed');
                 TEST_OK=false;

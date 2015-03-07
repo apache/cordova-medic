@@ -12,7 +12,7 @@ var fs              = require('fs'),
 
 var TEST_DIR = process.cwd().replace(/\\/g, '\\\\'),
     BRANCH = 'master',
-    TOOL_DIR = path.join(TEST_DIR, 'medic'),
+    TOOL_DIR = path.join(TEST_DIR, 'cordova-medic'),
     MSPEC_DIR = path.join(TEST_DIR, 'mobilespec'),
     TEST_OK = true;
 
@@ -53,7 +53,7 @@ buildinfo('Windows', BRANCH, function (error, sha) {
         if (build_target === "store80") {
             //setTargetStoreVersion('8.0'); // this value is used by default
         } else if (build_target === "store") {
-            // store target configuration is specified via config.xml 
+            // store target configuration is specified via config.xml
             setTargetStoreVersion('8.1');
         }
 
@@ -62,7 +62,7 @@ buildinfo('Windows', BRANCH, function (error, sha) {
 
         windows(output_location, sha, test_timeout, build_target)
             .then(function onSuccess() {
-                return testcheck(sha, config.couchdb.host);
+                return testcheck(sha, config.couchdb.uri);
             }, function onError(err) {
                 TEST_OK = false;
                 error_writer('windows', sha, 'Windows tests execution failed.', err);

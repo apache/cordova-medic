@@ -30,7 +30,7 @@ buildinfo('Android', BRANCH, function (error, sha) {
 
         android(output_location, sha, test_timeout)
             .then(function onSuccess() {
-                return testcheck(sha, config.couchdb.host);
+                return testcheck(sha, config.couchdb.uri);
             }, function onError(err) {
                 TEST_OK = false;
                 error_writer('android', sha, 'Android tests execution failed.', err);

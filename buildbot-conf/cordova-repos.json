@@ -1,0 +1,457 @@
+{
+    "mobile-chrome-apps": {
+        "codebase":  "chrome",
+        "codebases": {
+            "chrome": {
+                "repo":   "https://github.com/MobileChromeApps/mobile-chrome-apps.git",
+                "branch": "master"
+            }
+        }
+    },
+
+    "cordova-medic": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-medic.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-medic.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-coho": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-coho.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-coho.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-mobile-spec": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-mobile-spec.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-mobile-spec.git",
+                "branch": "master"
+            }
+        }
+    },
+
+    "cordova-cli": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-cli.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-cli.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugman": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugman.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugman.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-lib": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-lib.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-lib.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-js": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-js.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-js.git",
+                "branch": "master"
+            }
+        }
+    },
+
+    "cordova-android": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-android.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-android.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-ios": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-ios.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-ios.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-wp8": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-wp8.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-wp8.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-windows": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-windows.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-windows.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-blackberry": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-blackberry.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-blackberry.git",
+                "branch": "master"
+            }
+        }
+    },
+
+    "cordova-plugin-test-framework": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-test-framework.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-test-framework.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugins": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugins.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugins.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-battery-status": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-battery-status.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-battery-status.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-camera": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-camera.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-camera.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-console": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-console.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-console.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-contacts": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-contacts.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-contacts.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-device": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-device.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-device.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-device-motion": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-device-motion.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-device-motion.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-device-orientation": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-device-orientation.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-device-orientation.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-dialogs": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-dialogs.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-dialogs.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-file": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-file.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-file.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-file-transfer": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-file-transfer.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-file-transfer.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-geolocation": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-geolocation.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-geolocation.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-globalization": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-globalization.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-globalization.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-inappbrowser": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-inappbrowser.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-inappbrowser.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-media": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-media.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-media.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-media-capture": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-media-capture.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-media-capture.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-network-information": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-network-information.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-network-information.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-splashscreen": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-splashscreen.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-splashscreen.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-statusbar": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-statusbar.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-statusbar.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-vibration": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-vibration.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-vibration.git",
+                "branch": "master"
+            }
+        }
+    },
+    "cordova-plugin-whitelist": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-plugin-whitelist.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-plugin-whitelist.git",
+                "branch": "master"
+            }
+        }
+    }
+}

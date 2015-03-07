@@ -18,7 +18,7 @@ var request = require('request'),
     follow = require('follow'),
     config = require('../../config');
 
-var couch = config.couchdb.host;
+var couch = config.couchdb.uri;
 
 if (couch.length < 4 || couch.indexOf('http') == -1) {
     throw ('Pretty sure your couch config URL is wrong. Here it is wtf man: ' + couch);
@@ -48,7 +48,7 @@ db.prototype = {
     },
     query_view:function(design, view, callback) {
         // Queries a view.
-        
+
         var db = this;
         var url = this.db_url + '/_design/' + design + '/_view/' + view;
         request.get(url, function(error, response, body) {
@@ -61,10 +61,10 @@ db.prototype = {
         });
     },
     clobber:function(id, document, callback) {
-        // Overwrites a document 
+        // Overwrites a document
         var db = this;
         var url = this.db_url + '/' + id;
-        
+
         request.put({
             url:url,
             json:document
@@ -111,7 +111,7 @@ db.prototype = {
                     }
                 });
             } else callback(true, response.statusCode);
-            
+
         });
     },
     follow:function(callback) {

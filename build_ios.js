@@ -27,7 +27,7 @@ buildinfo('ios', branch, function (error, sha) {
 
         ios(output_location, sha, test_timeout)
             .then(function () {
-                return testcheck(sha, config.couchdb.host);
+                return testcheck(sha, config.couchdb.uri);
             }, function (err) {
                 TEST_OK = false;
                 error_writer('ios', sha, 'iOS tests execution failed.', err);

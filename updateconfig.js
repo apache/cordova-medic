@@ -8,7 +8,7 @@ var fs     = require('fs'),
 
 //get parameters, that should been written to config.xml
 var entry_point = config.app.entry,
-    couch_host = config.couchdb.host;
+    couch_host = config.couchdb.uri;
 
 var configFile = path.join('mobilespec', 'config.xml'),
     cspFile = path.join('mobilespec', 'www', 'csp-incl.js');

@@ -1,0 +1,11 @@
+pbcsUser    = 'password'
+pbcsPwd     = 'password'
+webAuthUser = 'password'
+webAuthPwd  = 'password'
+
+cordovaIOSSlavePwd        = 'password'
+cordovaWindowsSlavePwd    = 'password'
+cordovaAndroidSlavePwd    = 'password'
+cordovaWin8SlavePwd       = 'password'
+cordovaBlackberrySlavePwd = 'password'
+cordovaCommonSlavePwd     = 'password'

@@ -1,0 +1,42 @@
+{
+    "couchdb": {
+        "uri":  "http://localhost:5984"
+    },
+    "dashboard": {
+        "port": 8088
+    },
+    "app": {
+        "entry":   "cdvtests/index.html",
+        "timeout": 600
+    },
+    "blackberry": {
+        "devices": {
+            "ips":      [],
+            "password": "password"
+        },
+        "bb10": {
+            "sdk":             "",
+            "signingPassword": ""
+        },
+        "tablet": {
+            "sdk":             "",
+            "signingPassword": ""
+        }
+    },
+    "ios": {
+        "keychainPassword": "",
+        "keychainLocation": ""
+    },
+    "wp8": {
+        "target": "emulator"
+    },
+    "windows8": {
+        "target": "emulator"
+    },
+    "mail": {
+        "to":        ["someone@someplace.com"],
+        "from":      "yourbuildbot@yourEmailService.com",
+        "password":  "yourSMTPpassword",
+        "serverURL": "put your external url here"
+    }
+}

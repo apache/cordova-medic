@@ -1,166 +1,175 @@
-Medic using BuildBot
-=======
+Cordova Medic
+=============
 
-> Tools for Automated Testing of Cordova
+# Description
 
-# Supported Cordova Platforms
-- On Mac
-  - iOS
-  - Android
-- On Windows
-  - Android
-  - Windows Phone 8
-  - Windows Universal Apps (Windows 8.0, Windows 8.1, Windows Phone 8.1)
+This repository contains Buildbot configuration and automation tools for setting up a continuous integration system for Apache Cordova. It currently supports builds on the following platforms:
 
-#Installation
-##Select target OS
-Install on a Mac or Windows depending on target test platform(s)
+- iOS
+- Android (Windows and OS X)
+- Windows Universal Apps (Windows 8.0, Windows 8.1, Windows Phone 8.1)
+- Windows Phone 8
 
-##Install prerequisites
-medic requires grunt-cli npm package to be installed globally. You can install it by typing `npm install -g grunt-cli` in console.
+# Prerequisites
 
-**Note:** this requires admin privileges on Mac OS.
+## CouchDB
 
-## Setup CouchDB
-1. Get and install [couchdb](http://couchdb.apache.org/) 1.3.1 
-2. Edit the local.ini to accept request from external host
+Medic depends on CouchDB for reporting results. The following steps document how to install a CouchDB server for development. If a CouchDB server already exists for use, feel free to skip to the Setting Up section.
 
-  `bind_address = 0.0.0.0`
-  
-  Also you may need to add appropriate firewall rules for port 5984.
-  
-  To test access to CouchDB portal try to open \<CouchDB host IP\>:5984 from browser
+### Installation
 
-  **Note:** don't use local IPs (e.g. localhost, 127.0.0.1) for CouchDB as it will produce connection problems for devices and emulators (they will resolve them according to their context)
+CouchDB can be installed from [this page][couchdb] as per the documentation provided there. Once CouchDB is installed, configure it to accept requests from external hosts by setting the following value in its `local.ini` file:
 
-3. Create the following three databases (functionality for creating of them should be available on \<CouchDB host IP\>:5984/_utils/):
-  - build_errors
-  - mobilespec_results
-  - test_details
+    bind_address = 0.0.0.0
 
-4. Add new document to `mobilespec_results` table with the following contents:
-  ```
-  {
-      "_id": "_design/results",
-      "views": {
-          "sha": {
-              "map": "function(doc){emit(doc.sha, {\"total\":doc.mobilespec.total,\"passed\":(doc.mobilespec.total - doc.mobilespec.failed),\"version\":doc.version,\"model\":doc.model,\"fails\":doc.mobilespec.failures});}"
-          }
-      }
-  }
-  ```
+Firewall rules for port 5984 (the default CouchDB port) may need to be added to allow access to the server. To test that it is configured correctly, open `http://[COUCHDB_HOST]:5984/_utils/` from a browser.
 
-5. Set up a wireless access point so that the devices being tested can access the couchDB
+### Setup
 
-## Install BuildBot
-1. Get [buildbot](http://buildbot.net) version 0.8.8
-2. Install buildbot using the buildbot install/tutorial instructions
-    http://docs.buildbot.net/latest/manual/installation.html
+Create the following databases:
 
-    http://trac.buildbot.net/wiki/RunningBuildbotOnWindows
-3. Get the sample running
-4. Stop the slave and the master
-5. Add slaves:
-  - On Mac
-    - buildslave create-slave slave_ios localhost:9889 cordova-ios-slave pass
-    - buildslave create-slave slave_android localhost:9889 cordova-android-slave pass
-  - On Windows
-    - buildslave create-slave slave_windows localhost:9889 cordova-windows-slave pass
- 
-6. Copy the following files from the medic repository to buildbot master directory:
-  - master.cfg
-  - projects.conf
-  - cordova.conf
-  - cordova-repos.json
-  - cordova-config.json.sample
+- build_errors
+- test_details
+- mobilespec_results
 
-  Then update cordova-config.json.sample with CouchDB host address, test platforms, ios keychain, current release build and _rename_ it to cordova-config.json
-  
-  **Note:** couchdb host must be specified via ip address due to windows platform restrictions.
+They can be created by going to the CouchDB admin page (located at `http://[COUCHDB_HOST]:5984/_utils/`) and clicking the `Create Database ...` button.
 
-  **Note 2:** cordova-config.json and cordova-repos.json files should be placed near cordova.conf (for local Medic instance in most cases this means that they need to be placed in BuildBot master directory).
+Next, add the following document to the `mobilespec_results` database:
 
-#Running the System
-- start the master with ~buildbot start master
-- start the slaves with:
-  - On Mac
-    -  buildslave start slave_ios
-    -  buildslave start slave_android
-  - On Windows
-    - buildslave start slave_windows
+    {
+        "_id": "_design/results",
+        "views": {
+            "sha": {
+                "map": "function(doc){emit(doc.sha, {\"total\":doc.mobilespec.total,\"passed\":(doc.mobilespec.total - doc.mobilespec.failed),\"version\":doc.version,\"model\":doc.model,\"fails\":doc.mobilespec.failures});}"
+            }
+        }
+    }
 
-    **Note:**  on Windows slave instance must be run under administrator; git/bin folder must be added to PATH so that rm, cp, mkdir commands are available from the command prompt.
-    
-    **Note:**  if you are using Android emulator, please make sure that it has SD card size bigger than 0 (see [CB-8535](https://issues.apache.org/jira/browse/CB-8535)).
-- point your browser at http://localhost:8010/waterfall to see the buildbot state
-- point your browser to the couchDB http://\<CouchDB host IP\>:5984/_utils/index.html to look at detailed test results
+Lastly, make sure that devices and machines that will be using Medic have access to the Internet and to the CouchDB server that was just created.
 
-#Controlling
-- restart the master with buildbot restart master
-- stop the master with buildbot stop master
-- force a test by clicking on the test link at the top of the buildbot display and then 'force build'
+## Python
 
-#Configuring
-- all changes for a local install should only require edits to cordova-config.json in the buildbot base directory
-- new platforms, test procedures, build steps, etc require edits to master.cfg, cordova.conf and cordova-repos.json which should still be global (all platforms)
-- whenever cordova-config.json, cordova-repos.json, cordova.conf or master.cfg changes, you need to restart the master (not slaves)
+Medic contains Python code and therefore requires Python. Install Python 2.7.x from [here][python]. *Do not install Python 3.x, because Medic does not run on it.* Make sure that the Python package manager, pip, is installed with Python. To verify that Python and pip are installed, run the following:
 
-#Overview
-Buildbot polls all the repositories every few minutes to look for changes. Whenever a change is detected, those changes trigger one or more build requests. 
+    python --version
+    pip --version
 
-Buildbot consists of a master that defines all the tests, the repositories, triggers, etc.
-The actual tests are run by slaves that are controlled by the master. The buildbot master describes the steps to run for tests and which slaves those test should run on. 
-Slaves that run tests on devices can only run one test at a time.
-The common slave can run multiple tests at once.
+On Windows, the PyWin32 extensions are required, and they can be acquired [here][pywin32].
 
-At the start of each test run, the collection of components (git repositories) and the checked out SHA for each is collected into a document and written to the couchDB in test_details. 
-The DB ref from this document is used as the SHA for the test and is what is recorded in mobilespec_results or build_errors
+## Buildbot
 
-The various test runners are configured to report a fail/pass by device and the buildbot display will report FAIL if any test on any device fails. 
-every command has a link to its output on the main display. When a mobile spec test completes, there is a link to the test result written to the output log.
+Medic uses Buildbot for running builds and performing continuous integration. Buildbot has the concept of master and slave machines, and has different libraries for each. (More info about Buildbot concepts can be found [here][bbconcepts]). To install the Buildbot library for a master, run the following:
 
-#Current Test Configuration
-- All slaves (Android, iOS, Windows) are configured to only run a single test at a time.
-- Tools (Coho, CLI, test system) always build from the master branch
-- Changes to tooling or the test scripts will trigger all tests.
+    pip install buildbot
 
-- Android tests:
-  - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in)
-  - platform and mobilspec 3.0.x branch with the cordova-js embedded in the cordova-android repo, plugins from master
-  - There are additional builder (AndroidWin), which perform builds of mobilespec application for Android in Windows environment.
+For a machine that will run Buildbot slaves, install the Buildbot slave library by running the following:
 
-- iOS tests:
-  - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in)
-  - platform and mobilspec 3.0.x branch with the cordova-js embedded in the cordova-ios repo, plugins from master
+    pip install buildbot-slave
 
-- Windows Phone8 tests:
-  - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in).
-  - There are two separate builders, which performs builds in different environments (VS2012 + MSBuild 4.0 / VS2013 + MSBuild 12.0)
+## UNIX tools
 
-- Windows Universal platform tests:
-  - platform, mobilespec, js, and plugins from master branch (cordova-js is built and copied in)
-  - Tests are executed on Local Machine, mobilespec app for --phone target is launched on emulator. Running mobilespec app on attached devices not supported yet.
-  - There are two separate builders, which performs builds in different environments (VS2012 + MSBuild 4.0 / VS2013 + MSBuild 12.0)
+To run builds, Medic slaves use some standard Unix tools such as `cp`, `rm`, and `git`. To run them on Windows, install Git from [here][git] and make sure to select the option to make basic Unix tools bundled with Git available within `cmd`.
 
-The tests use COHO and CLI for as much as possible to ensure that the developer tool chain is working.
+## Cordova
 
-#Configuration Files
-**master.cfg:** The main configuration file for buildbot. It is a python script and defines the triggers, builders and status display.
-It uses both cordova-config.json and cordova-repos.json to determine which platforms and versions to test.
+Any core depencencies of Cordova, like Node.js and NPM, are naturally dependencies of the slave machines that will run Cordova builds. Node.js and NPM can be obtained from [here][node].
 
-**projects.conf** Configuration script used to load per-project buildbot configurations.
+# Installation
 
-**cordova.conf** Configuration script that contains cordova project-specific buldbot configuration (Build steps, schedulers, build factories definitions, etc.)
+Medic contains configuration for a Buildbot installation to run Apache Cordova continuous integration. Buildbot uses the master-slave paradigm to orchestrate builds, and medic contains configuration for a Buildbot master and slaves, as well as a few extra files, all inside the `buildbot-conf` directory.
 
-The two files above (_projects.conf_ and _cordova.conf_ are necessary to maintain compatibility with Apache Buildbot configuration files structure)
+The instructions provided below describe a simple development setup, not a full-blown production deployment, which is outside the scope of this document. More official documentation on Buildbot can be found [here][buildbot], and on running Buildbot on Windows can be found [here][buildbot_windows].
 
-**cordova-config.json:** Used by the buildbot master script and by some of the medic command-line tools. 
-It defines the platforms to test, the current release version, the couchdb url, and the ios keychain. 
-The release version specified here is used anywhere the keyword "RELEASE" is used in a test definition.
+Although a Buildbot master and slaves are separate tasks, they do not need to be run on different machines, and the following steps can either be performed on separate machines or the same one. Keep in mind however that a slave can only run builds that its machine's environment supports.
 
-**cordova-repos.json:** Contains the definitions for the tests (schedulers) and the various repositories in the project. 
-Tests define the components and branches that should trigger a test run. 
-This requires multiple triggers for each test path since a build might use tools from master, platforms from release and plugins from dev.
+All of the following steps assume that Buildbot's slaves and masters will be installed under `/home/buildbot`.
 
-For each repo there is a release branch (most recent supported release) and a current branch (tip-of-tree). 
-The branches are used by the python script in conjunction with the tests to set up the trggers.
+## Master
+
+First, create a Buildbot master. The following steps are a summary of [these official steps][buildmaster], so please feel free to follow the official ones instead.
+
+Create a master directory at `/home/buildbot/master` by running:
+
+    buildbot create-master /home/buildbot/master
+
+Then, install the Medic master configuration by copying the following files into `/home/buildbot/master`, overwriting any files if prompted:
+
+- master.cfg
+- projects.conf
+- cordova.conf
+- cordova-internal.conf
+- cordova-repos.json
+- *cordova-config.json*<sup>[1]</sup>
+- *private.py*<sup>[1]</sup>
+
+<sup>[1]</sup> These two files do not exist in the repository and must be created for each installation of Medic. Create them from their respective `.sample` files.
+
+## Slaves
+
+Now, create slaves. Similarly to the above instructions, the following steps are a summary of [the official ones][buildslave], so please feel free to follow the official ones.
+
+On OS X:
+
+    buildslave create-slave /home/buildbot/osx http://[MASTER_HOST]:9889 cordova-ios-slave pass
+
+On Linux:
+
+    buildslave create-slave /home/buildbot/linux http://[MASTER_HOST]:9889 cordova-linux-slave pass
+
+On Windows 8 and Windows 8.1:
+
+    buildslave create-slave /home/buildbot/windows http://[MASTER_HOST]:9889 cordova-windows-slave pass
+
+No further steps are necessary to make a slave obey a Medic master. However, every slave needs to be configured appropriately for its platform. For platform-specific details on slave configuration, see [SLAVES.md](SLAVES.md).
+
+# Running
+
+To start the master, run:
+
+    buildbot start /home/buildbot/master
+
+To start a slave (e.g. for Windows), run:
+
+    buildslave start /home/buildbot/windows
+
+To view the master control panel, browse the URI: `http://[MASTER_HOST]/`.
+
+To stop either task, just replace `start` with `stop` in the above commands. **NOTE**: On Windows, the slave task blocks the console, and `Ctrl-C` will stop it. On all other platforms both master and slave run as daemons, and using the `stop` command will terminate them.
+
+To check logs for a master or a slave, look at the `twistd.log` file in its respective directory. Using the `tail` utility is very handy for this, like so:
+
+    tail -n 100 -f /home/buildbot/osx/twistd.log
+
+# Changing Configuration
+
+Buildbot has an unusual configuration mechanism (Python code) and as such requires a restart to reload it. The Buildbot documentation also describes a  `buildbot reconfig` command, but it does not work in all cases. More information is [here][reconfig].
+
+In general, when any of the files in the master directory are changed, a restart/reconfig is necessary. However, slaves do not need to be reconfigured or restarted when the master's configuration changes.
+
+# Configuration Layout
+
+**master.cfg**: The main configuration file for Buildbot. This file is made to be similar to the one used on the Apache Infrastructure Buildbot because Medic runs on there.
+
+**projects.conf**: This file is included because it also mirrors the Apache Infrastructure setup.
+
+**cordova.conf**: This file contains the actual Buildbot configuration that is unique to Apache Cordova.
+
+**cordova-internal.conf**: An extension of `cordova.conf` that is internal to a particular installation of Medic and does not make it into the Apache Infrastructure Buildbot.
+
+**cordova-repos.json:** List of Cordova repositories and their relevant information.
+
+**cordova-config.json**: Installation-specific file that defines miscellaneous parameters like CouchDB host and port, and email credentials. *Only a sample of this file is provided in the repo, with a `.sample` extension.*
+
+**private.py**: Python file containing sensitive configuration. *Only a sample of this file is provided in the repo, with a `.sample` extension.*
+
+[couchdb]:          http://couchdb.apache.org/
+[python]:           https://www.python.org/downloads/
+[pywin32]:          http://sourceforge.net/projects/pywin32/files/
+[buildbot]:         http://docs.buildbot.net/0.8.10/manual/installation.html
+[buildmaster]:      http://docs.buildbot.net/0.8.10/manual/installation.html#creating-a-buildmaster
+[buildslave]:       http://docs.buildbot.net/0.8.10/manual/installation.html#creating-a-buildslave
+[bbconcepts]:       http://docs.buildbot.net/0.8.10/manual/concepts.html
+[git]:              http://git-scm.com/download/win
+[node]:             http://nodejs.org/download/
+[buildbot_windows]: http://trac.buildbot.net/wiki/RunningBuildbotOnWindows
+[reconfig]:         http://docs.buildbot.net/0.8.10/manual/cfg-intro.html#reloading-the-config-file-reconfig
