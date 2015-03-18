@@ -29,6 +29,11 @@ module.exports = function blackberry_scanner(callback) {
         password = config.blackberry.devices.password,
         storepass = config.blackberry.bb10.signingPassword;
 
+    if (ips.length < 1) {
+        log('no devices configured');
+        process.exit(1);
+    }
+
     // figure out over what range of ips to scan
     if (ips instanceof Array) {
         ips.forEach(function(ip) {
@@ -47,11 +52,11 @@ module.exports = function blackberry_scanner(callback) {
                     callback(device);
 
                 } else if (code === 127) {
-                    log('Error executing cmd: ' + cmd + 
-                        '\n  returned with code: ' + 
+                    log('Error executing cmd: ' + cmd +
+                        '\n  returned with code: ' +
                         code + '\n  make sure the blackberry:bb10:sdk value in config.json points to your installation of the BB10 Webworks SDK');
                 }
-                
+
             });
         });
     }
