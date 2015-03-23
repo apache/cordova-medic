@@ -167,6 +167,19 @@
             }
         }
     },
+    "cordova-firefoxos": {
+        "codebase":  "github",
+        "codebases": {
+            "asf":  {
+                "repo":   "https://git-wip-us.apache.org/repos/asf/cordova-firefoxos.git",
+                "branch": "master"
+            },
+            "github":  {
+                "repo":   "https://github.com/apache/cordova-firefoxos.git",
+                "branch": "master"
+            }
+        }
+    },
 
     "cordova-plugin-test-framework": {
         "codebase":  "github",
