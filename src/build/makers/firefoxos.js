@@ -2,8 +2,7 @@ var shell        = require('shelljs'),
     path         = require('path'),
     error_writer = require('./error_writer'),
     n            = require('ncallbacks'),
-    fs           = require('fs'),
-    mspec        = require('./mobile_spec');
+    fs           = require('fs');
 
 module.exports = function(output, sha, devices, entry_point, couchdb_cfg, callback) {
 
