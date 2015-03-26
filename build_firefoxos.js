@@ -7,10 +7,8 @@ var argv = require('optimist').argv;
 var testcheck = require('./testchecker');
 
 // this assumes that you start it in the sandbox
-
-var TEST_DIR=process.cwd().replace(/\\/g, '\\\\');
+var TEST_DIR=process.cwd();
 var BRANCH='master';
-var TOOL_DIR=path.join(TEST_DIR,'medic');
 var MSPEC_DIR=path.join(TEST_DIR,'mobilespec');
 
 var TEST_OK=true;
