@@ -12,18 +12,20 @@ module.exports = function(output, sha, devices, entry_point, couchdb_cfg, callba
       try {
          // make sure firefoxos app got created first.
          if (!fs.existsSync(output)) {
-              throw new Error('create must have failed as output path does not exist.');              
+              throw new Error('create must have failed as output path does not exist.' + 'path  ' +output );              
          }
+         
          var mspec_out = path.join(output, 'assets', 'www');
          // add the medic configuration (sha,host) to destination folder
          var medic_config='{"sha":"'+sha+'","couchdb":"'+couchdb_cfg.host+'","couchdbext":"'+couchdb_cfg.exthost+'"}';
-         fs.writeFileSync(path.join(output, 'assets', 'www','autotest','pages', 'medic.json'),medic_config,'utf-8');
+         //fs.writeFileSync(path.join(output, 'assets', 'www','autotest','pages', 'medic.json'),medic_config,'utf-8');
          log('Modifying Cordova firefoxos application.');
 
-         var configFile = path.join(output, 'res', 'xml', 'config.xml');
+         var configFile = path.join(output, 'config.xml');
          fs.writeFileSync(configFile, fs.readFileSync(configFile, 'utf-8').replace(/<content\s*src=".*"/gi, '<content src="' +entry_point + '"'), 'utf-8');
          // make sure the couch db server is whitelisted
          fs.writeFileSync(configFile, fs.readFileSync(configFile, 'utf-8').replace(/<access origin="http:..audio.ibeat.org" *.>/gi,'<access origin="http://audio.ibeat.org" /><access origin="'+couchdb_cfg.host+'" />', 'utf-8'));
+         
      } catch (e) {
          error_writer('firefoxos', sha, 'Exception thrown modifying FirefoxOS mobile spec application.', e.message);
          callback(true);
