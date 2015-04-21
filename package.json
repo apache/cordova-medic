@@ -4,21 +4,23 @@
   "description": "continuous integration setup for Apache Cordova",
   "author": "Fil Maj <maj.fil@gmail.com> (http://filmaj.ca)",
   "dependencies": {
-    "commander": "^2.5.0",
     "follow": "0.8.0",
-    "glob":"3.2.6",
+    "glob": "3.2.6",
     "mime": "1.2.9",
     "ncallbacks": "1.0.0",
     "optimist": "0.3.5",
-    "q":"0.8.6",
+    "q": "0.8.6",
     "request": "2.12.0",
-    "shelljs": "^0.3.0"
+    "shelljs": "^0.4.0"
   },
   "subdomain": "cordova.medic",
   "engines": {
     "node": ">=0.8.x"
   },
-  "contributors":[
-    {"name":"Don Coleman","email":"don.coleman@gmail.com"}
+  "contributors": [
+    {
+      "name": "Don Coleman",
+      "email": "don.coleman@gmail.com"
+    }
   ]
 }
