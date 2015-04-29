@@ -19,54 +19,44 @@
  * under the License.
  */
 
+/* jshint node: true */
+
 "use strict";
 
-// node dependencies
 var fs = require("fs");
-var os = require("os");
 
-// external dependencies
 var shelljs  = require("shelljs");
 var optimist = require("optimist");
+
+var util = require("../lib/util");
 
 // constants
 var MAX_REMOVAL_ATTEMPTS = 3;
 
-// parse args
-var argv = optimist
-    .usage("Usage: $0 [command]")
-    .demand(1)
-    .argv;
-
 // helpers
-function fatal(message) {
-    console.error("ERROR: " + message);
-    process.exit(1);
-}
-
-function contains(collection, item) {
-    return collection.indexOf(item) != (-1);
-}
-
 function exclusiveLs(lsPath, excludes) {
     var paths = fs.readdirSync(lsPath);
     return paths.filter(function (pathName) {
-        return !contains(excludes, pathName);
+        return !util.contains(excludes, pathName);
     });
 }
 
-// subcommands
-function commandClean() {
+// main
+function main() {
 
-    // command-specific args
-    argv = optimist
+    // shell config
+    shelljs.config.fatal  = false;
+    shelljs.config.silent = false;
+
+    // get args
+    var argv = optimist
         .usage("Usage: $0 --exclude {name[,name[,...]]}")
         .argv;
 
-    // get args
     var excludeString = argv.exclude;
     var excludedPaths = [".", ".."];
 
+    // parse excludes
     if (argv.exclude) {
         excludedPaths = excludedPaths.concat(excludeString.split(","));
     }
@@ -74,12 +64,12 @@ function commandClean() {
     // get all directories except excluded ones
     var pathsToRemove = exclusiveLs(".", excludedPaths);
 
-    console.log("NOT removing the following paths:");
-    console.log(excludedPaths);
-    console.log("removing the following paths:");
-    console.log(pathsToRemove);
+    util.medicLog("NOT removing the following paths:");
+    util.medicLog("[ " + excludedPaths.join(" , ") + " ]");
+    util.medicLog("removing the following paths:");
+    util.medicLog("[ " + pathsToRemove.join(" , ") + " ]");
 
-    // skip if no paths to delete
+    // skip if there are no paths to delete
     if (pathsToRemove.length <= 0) {
         return;
     }
@@ -88,6 +78,8 @@ function commandClean() {
     var attempts = 0;
     var success  = false;
     while (success === false) {
+
+        util.medicLog("cleanup attempt #" + attempts + " started");
 
         // try to remove the paths
         shelljs.rm("-rf", pathsToRemove);
@@ -109,27 +101,10 @@ function commandClean() {
 
     // if loop exited without success, return an error
     if (success === false) {
-        fatal("failed to remove files");
-    }
-}
-
-// main
-function main() {
-
-    // shell config
-    shelljs.config.fatal  = false;
-    shelljs.config.silent = false;
-
-    // get args
-    var command = argv._[0];
-
-    // run command
-    switch (command) {
-        case "clean":
-            commandClean();
-            break;
-        default:
-            fatal("unknown command " + command);
+        console.error("failed to remove files");
+        process.exitCode = 1;
+    } else {
+        util.medicLog("cleanup succeeded");
     }
 }
 
