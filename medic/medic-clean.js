@@ -102,7 +102,7 @@ function main() {
     // if loop exited without success, return an error
     if (success === false) {
         console.error("failed to remove files");
-        process.exitCode = 1;
+        process.exit(1);
     } else {
         util.medicLog("cleanup succeeded");
     }

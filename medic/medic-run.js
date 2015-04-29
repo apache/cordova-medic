@@ -36,6 +36,7 @@ var testwait = require("../lib/testwait");
 var DEFAULT_ENCODING        = "utf-8";
 var CORDOVA_MEDIC_DIR       = "cordova-medic";
 var DEFAULT_APP_PATH        = "mobilespec";
+var CORDOVA_ERROR_PATTERN   = /^ERROR/;
 var DEFAULT_APP_ENTRY       = "index.html";
 var ANDROID_TIMEOUT         = 120000; // in milliseconds
 var MEDIC_BUILD_PREFIX      = "medic-cli-build";
@@ -45,10 +46,7 @@ var DEFAULT_TIMEOUT         = 600; // in seconds
 
 // helpers
 function currentMillisecond() {
-    // NOTE:
-    //      coercing a Date to a Number returns
-    //      the Date's representation in milliseconds
-    return Number(new Date());
+    return new Date().valueOf();
 }
 
 function generateBuildID() {
@@ -331,25 +329,27 @@ function main() {
     // enter the app directory
     shelljs.pushd(appPath);
 
-    // build the code (synchronously)
+    // compose commands
     var buildCommand = cli + " build " + platform + " -- " + platformArgs;
-    util.medicLog("building:");
-    util.medicLog("    " + buildCommand);
+    var runCommand   = cli + " run " + platform + " -- " + platformArgs;
 
+    // build the code
+    // NOTE:
+    //      this is SYNCHRONOUS
+    util.medicLog("running:");
+    util.medicLog("    " + buildCommand);
     var result = shelljs.exec(buildCommand, {silent: false, async: false});
-    if (result.code != 0) {
-        console.error("BUILD FAILED:\n" + result.output);
+    if (result.code != 0 || CORDOVA_ERROR_PATTERN.test(result.output)) {
         util.fatal("build failed");
     }
 
-    // run the code (asynchronously)
-    var runCommand = cli + " run " + platform + " -- " + platformArgs;
+    // run the code
+    // NOTE:
+    //      this is ASYNCHRONOUS
     util.medicLog("running:");
     util.medicLog("    " + runCommand);
-
     shelljs.exec(runCommand, {silent: false, async: true}, function (returnCode, output) {
-        if (returnCode != 0) {
-            console.error("RUN FAILED:\n" + result.output);
+        if (returnCode != 0 || CORDOVA_ERROR_PATTERN.test(output)) {
             util.fatal("run failed");
         }
     });
@@ -361,20 +361,19 @@ function main() {
     // NOTE:
     //      timeout needs to be in milliseconds, but it's
     //      given in seconds, so we multiply by 1000
-    util.medicLog("watching for test results");
     testwait.init(couchdbURI);
     testwait.waitTestsCompleted(buildId, timeout * 1000).then(
         function onFulfilled(value) {
             util.medicLog("got test results");
-            process.exit(process.exitCode);
+            process.exit(0);
         },
         function onRejected(error) {
             console.error("didn't get test results: " + error);
-            process.exitCode = 1;
+            process.exit(1);
         }
     );
 
-    util.medicLog("waiting ...");
+    util.medicLog("waiting for test results ...");
 }
 
 main();
