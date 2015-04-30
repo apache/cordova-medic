@@ -23,8 +23,11 @@
 
 "use strict";
 
+var fs = require("fs");
+
 var optimist = require("optimist");
 
+var util      = require("../lib/util");
 var testcheck = require("../lib/testcheck");
 
 function main() {
@@ -34,19 +37,47 @@ function main() {
         .usage("Usage: $0 {options}")
         .demand("id")
         .demand("couchdb")
+        .describe("id", "the build for which results are to be retrieved")
+        .describe("couchdb", "the CouchDB server from which to retrieve results")
+        .describe("file", "filename to which to optionally write results")
         .argv;
 
     var buildId    = argv.id;
     var couchdbURI = argv.couchdb;
+    var outputPath = argv.file;
 
-    var result = testcheck(buildId, couchdbURI);
-    result.then(
-        function onFulfilled(value) {
-            if (value === true) {
-                process.exit(0);
-            } else {
-                process.exit(1);
+    console.log('Getting test results for ' + buildId);
+
+    testcheck(buildId, couchdbURI).done(
+        function onFulfilled(testResults) {
+
+            var numFailures = testResults.mobilespec.failures;
+            var numSpecs    = testResults.mobilespec.specs;
+
+            var counts = {
+                total:    numSpecs,
+                failed:   numFailures,
+                passed:   numSpecs - numFailures,
+                warnings: 0,
             }
+
+            if (outputPath) {
+                fs.writeFileSync(outputPath, JSON.stringify(counts) + "\n", util.DEFAULT_ENCODING);
+            }
+
+            if (typeof numFailures == "undefined" || numFailures === 0) {
+                console.log("No failures were detected");
+            }
+
+            console.log("Total failures: " + numFailures);
+            console.log("Test failures were detected. Open " + couchdbURI + "/_utils/document.html?mobilespec_results/" + testResults._id + " for details");
+            console.log("Failing tests:");
+
+            testResults.mobilespec.results.forEach(function (result) {
+                if (result.status === "failed") {
+                    console.log(result.fullName);
+                }
+            });
         },
         function onRejected(error) {
             console.error("test check failed: " + error);

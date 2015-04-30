@@ -33,7 +33,6 @@ var util     = require("../lib/util");
 var testwait = require("../lib/testwait");
 
 // constants
-var DEFAULT_ENCODING        = "utf-8";
 var CORDOVA_MEDIC_DIR       = "cordova-medic";
 var DEFAULT_APP_PATH        = "mobilespec";
 var CORDOVA_ERROR_PATTERN   = /^ERROR/;
@@ -79,7 +78,7 @@ function createMedicJson(appPath, buildId, couchdbURI) {
     var medicConfigContents = JSON.stringify(medicConfig) + "\n";
     var medicConfigPath     = path.join(appPath, "www", "medic.json");
 
-    fs.writeFileSync(medicConfigPath, medicConfigContents, DEFAULT_ENCODING);
+    fs.writeFileSync(medicConfigPath, medicConfigContents, util.DEFAULT_ENCODING);
 }
 
 function addURIToWhitelist(appPath, uri) {
@@ -87,8 +86,8 @@ function addURIToWhitelist(appPath, uri) {
     var configFile = getConfigPath(appPath);
     var cspFile    = getCSPPath(appPath);
 
-    var configContent = fs.readFileSync(configFile, DEFAULT_ENCODING);
-    var cspContent    = fs.readFileSync(cspFile, DEFAULT_ENCODING);
+    var configContent = fs.readFileSync(configFile, util.DEFAULT_ENCODING);
+    var cspContent    = fs.readFileSync(cspFile, util.DEFAULT_ENCODING);
 
     // add whitelisting rule allow access to couch server
     util.medicLog("Adding whitelist rule for CouchDB host: " + uri);
@@ -96,7 +95,7 @@ function addURIToWhitelist(appPath, uri) {
     if (!util.contains(configContent, accessOriginTag)) {
         configContent = configContent.split("</widget>").join("");
         configContent += "    " + accessOriginTag + "\n</widget>\n";
-        fs.writeFileSync(configFile, configContent, DEFAULT_ENCODING);
+        fs.writeFileSync(configFile, configContent, util.DEFAULT_ENCODING);
     }
 
     // add couchdb address to csp rules
@@ -104,14 +103,14 @@ function addURIToWhitelist(appPath, uri) {
     var cspRule = "connect-src " + uri;
     if (!util.contains(cspContent, cspRule)) {
         cspContent = cspContent.replace("connect-src", cspRule);
-        fs.writeFileSync(cspFile, cspContent, DEFAULT_ENCODING);
+        fs.writeFileSync(cspFile, cspContent, util.DEFAULT_ENCODING);
     }
 }
 
 function setEntryPoint(appPath, entryPoint) {
 
     var configFile = getConfigPath(appPath);
-    var configContent = fs.readFileSync(configFile, DEFAULT_ENCODING);
+    var configContent = fs.readFileSync(configFile, util.DEFAULT_ENCODING);
 
     // replace/add start page preference
     // check if config.xml already contains <content /> element
@@ -131,7 +130,7 @@ function setEntryPoint(appPath, entryPoint) {
     }
 
     // write the changes
-    fs.writeFileSync(configFile, configContent, DEFAULT_ENCODING);
+    fs.writeFileSync(configFile, configContent, util.DEFAULT_ENCODING);
 }
 
 function changeAndroidLoadTimeout(appPath, timeout) {
@@ -145,7 +144,7 @@ function changeAndroidLoadTimeout(appPath, timeout) {
     var widgetRegex            = /<\/s*widget\s*>/i;
 
     var configFile    = getConfigPath(appPath);
-    var configContent = fs.readFileSync(configFile, DEFAULT_ENCODING);
+    var configContent = fs.readFileSync(configFile, util.DEFAULT_ENCODING);
 
     if (timeoutRegex.test(configContent)) {
         configContent = configContent.replace(timeoutRegex, timeoutTag);
@@ -163,7 +162,7 @@ function changeAndroidLoadTimeout(appPath, timeout) {
     }
 
     // write the changes
-    fs.writeFileSync(configFile, configContent, DEFAULT_ENCODING);
+    fs.writeFileSync(configFile, configContent, util.DEFAULT_ENCODING);
 }
 
 function setWindowsTargetStoreVersion(appPath, version) {
@@ -171,7 +170,7 @@ function setWindowsTargetStoreVersion(appPath, version) {
     util.medicLog('setting target store version to ' + version);
 
     var configFile    = getConfigPath(appPath);
-    var configContent = fs.readFileSync(configFile, DEFAULT_ENCODING);
+    var configContent = fs.readFileSync(configFile, util.DEFAULT_ENCODING);
 
     var versionPreference = '    <preference name="windows-target-version" value="' + version + '" />';
     configContent = configContent.replace('</widget>', versionPreference + '\r\n</widget>');
@@ -218,8 +217,7 @@ function windowsSpecificPreparation(argv) {
 
         util.medicLog('Patching WindowsStoreAppUtils to allow app to be run in automated mode');
 
-        var platformPath = path.join(appPath, 'platforms', 'windows');
-
+        var platformPath   = path.join(appPath, 'platforms', 'windows');
         var libPath        = path.join(platformPath, 'cordova', 'lib');
         var appUtilsPath   = path.join(libPath, 'WindowsStoreAppUtils.ps1');
         var srcScriptPath  = path.join('cordova-medic', 'lib', 'patches', 'EnableDebuggingForPackage.ps1');
@@ -230,9 +228,10 @@ function windowsSpecificPreparation(argv) {
 
         // add extra code to patch
         shelljs.sed(
-            '-i', /^\s*\$appActivator .*$/gim,
+            '-i',
+            /^\s*\$appActivator .*$/gim,
             '$&\n' +
-            '    powershell ' + destScriptPath + ' $$ID\n' +
+            '    powershell ' + path.join(process.cwd(), destScriptPath) + ' $$ID\n' +
             '    $Ole32 = Add-Type -MemberDefinition \'[DllImport("Ole32.dll")]public static extern int CoAllowSetForegroundWindow(IntPtr pUnk, IntPtr lpvReserved);\' -Name \'Ole32\' -Namespace \'Win32\' -PassThru\n' +
             '    $Ole32::CoAllowSetForegroundWindow([System.Runtime.InteropServices.Marshal]::GetIUnknownForObject($appActivator), [System.IntPtr]::Zero)',
             appUtilsPath

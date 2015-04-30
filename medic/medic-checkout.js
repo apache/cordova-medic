@@ -67,7 +67,7 @@ function main() {
     }
 
     // read in config
-    var projectsConfig = JSON.parse(fs.readFileSync(configFile, "utf-8"));
+    var projectsConfig = JSON.parse(fs.readFileSync(configFile, util.DEFAULT_ENCODING));
 
     // clone all projects in the config
     for (var projectName in projectsConfig) {
