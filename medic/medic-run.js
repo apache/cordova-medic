@@ -333,6 +333,25 @@ function main() {
     var buildCommand = cli + " build " + platform + " -- " + platformArgs;
     var runCommand   = cli + " run " + platform + " -- " + platformArgs;
 
+    if(platform === util.FIREFOXOS) {
+
+        var runServe = cli + " serve";
+
+        // run the code
+        // NOTE:
+        //      this is ASYNCHRONOUS
+        util.medicLog("running:");
+        util.medicLog("    " + runServe);
+        shelljs.exec(runServe, {silent: false, async: true}, function (returnCode, output) {
+            if (returnCode != 0 || CORDOVA_ERROR_PATTERN.test(output)) {
+                util.fatal("run failed");
+            } else {
+                window.open("http://localhost:8000/firefoxos/www/");
+            }
+        });
+
+    }    
+
     // build the code
     // NOTE:
     //      this is SYNCHRONOUS
