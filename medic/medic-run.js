@@ -28,6 +28,7 @@ var path = require("path");
 
 var shelljs  = require("shelljs");
 var optimist = require("optimist");
+var open     = require("open");
 
 var util     = require("../lib/util");
 var testwait = require("../lib/testwait");
@@ -346,7 +347,7 @@ function main() {
             if (returnCode != 0 || CORDOVA_ERROR_PATTERN.test(output)) {
                 util.fatal("run failed");
             } else {
-                window.open("http://localhost:8000/firefoxos/www/");
+                open("http://localhost:8000/firefoxos/www/");
             }
         });
 
