@@ -41,7 +41,7 @@ function tasksOnPlatform(platformName) {
             if (util.isWindows()) {
                 return ["emulator-arm.exe", "adb.exe"];
             } else {
-                return ["emulator64-x86"];
+                return ["emulator64-x86", "emulator64-arm", "adb"];
             }
         case util.BLACKBERRY:
             return [];
