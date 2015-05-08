@@ -56,7 +56,7 @@ function getKillCommand(taskNames) {
         var cli  = "taskkill /F";
         var args = taskNames.map(function (name) { return "/IM \"" + name + "\""; });
     } else {
-        var cli  = "killall";
+        var cli  = "killall -9";
         var args = taskNames.map(function (name) { return "\"" + name + "\""; });
     }
 
