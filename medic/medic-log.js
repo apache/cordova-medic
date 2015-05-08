@@ -23,19 +23,39 @@
 
 "use strict";
 
-var commander = require("commander");
+var fs = require("fs");
 
+var shelljs  = require("shelljs");
+var optimist = require("optimist");
+var util     = require("../lib/util");
+
+// main
 function main() {
 
-    // delegate work to subcommands
-    commander
-        .command("clean",    "clean the current directory")
-        .command("kill",     "kill tasks spawned by a platform run")
-        .command("checkout", "check out repositories")
-        .command("run",      "run a cordova app in automated mode")
-        .command("check",    "analyze test runs from a medic DB")
-        .command("log",      "output platform-specific logs to console")
-        .parse(process.argv);
+    // shell config
+    shelljs.config.fatal  = false;
+    shelljs.config.silent = false;
+
+    // command-specific args
+    var argv = optimist
+        .usage("Usage: $0 {platform}")
+        .demand('platform')
+        .argv;
+
+    switch (argv.platform) {
+        case util.ANDROID:
+            var cmd = "adb logcat -d";
+            console.log("executing " + cmd);
+            shelljs.exec(cmd, function(code, output) {
+                if (code > 0) {
+                    util.fatal('Failed to run logcat command.');
+                }
+            });
+            break;
+        default:
+            console.warn("Logging is unsupported for " + argv.platform);
+            break;
+    }
 }
 
 main();
