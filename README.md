@@ -97,7 +97,7 @@ Then, install the Medic master configuration by copying the following files into
 - master.cfg
 - projects.conf
 - cordova.conf
-- cordova-internal.conf
+- cordova-extra.conf
 - cordova-repos.json
 - *cordova-config.json*<sup>[1]</sup>
 - *private.py*<sup>[1]</sup>
@@ -154,7 +154,7 @@ In general, when any of the files in the master directory are changed, a restart
 
 **cordova.conf**: This file contains the actual Buildbot configuration that is unique to Apache Cordova.
 
-**cordova-internal.conf**: An extension of `cordova.conf` that is internal to a particular installation of Medic and does not make it into the Apache Infrastructure Buildbot.
+**cordova-extra.conf**: An extension of `cordova.conf` that is internal to a particular installation of Medic, is not tracked in the repo, and does not make it into the Apache Infrastructure Buildbot. *Only a sample of this file is provided in the repo, with a `.sample` extension.*
 
 **cordova-repos.json:** List of Cordova repositories and their relevant information.
 
