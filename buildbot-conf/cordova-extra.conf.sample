@@ -1,0 +1,38 @@
+# NOTE:
+#      this file gets executed at the bottom of cordova.conf, and
+#      has access to all of its globals
+
+####### UTILITIES
+
+# None
+
+####### SLAVES
+
+c['slaves'].extend([])
+
+####### CHANGESOURCES
+
+# NOTE:
+#      Apache's (and our) master.cfg sets this to one change source,
+#      so we should make it a list before adding our own change sources
+old_change_source  = c['change_source']
+c['change_source'] = list()
+c['change_source'].append(old_change_source)
+
+c['change_source'].extend([])
+
+####### STEPS
+
+# None
+
+####### BUILDERS
+
+c['builders'].extend([])
+
+####### STATUS TARGETS
+
+c['status'].extend([])
+
+####### SCHEDULERS
+
+c['schedulers'].extend([])

@@ -1,3 +1,4 @@
 node_modules
 cordova-config.json
 private.py
+cordova-extra.conf
