@@ -97,12 +97,13 @@ Then, install the Medic master configuration by copying the following files into
 - master.cfg
 - projects.conf
 - cordova.conf
-- cordova-extra.conf
 - cordova-repos.json
 - *cordova-config.json*<sup>[1]</sup>
+- *cordova-exta.conf*<sup>[1]</sup>
 - *private.py*<sup>[1]</sup>
+- *github.passwd*<sup>[1]</sup>
 
-<sup>[1]</sup> These two files do not exist in the repository and must be created for each installation of Medic. Create them from their respective `.sample` files.
+<sup>[1]</sup> These files do not exist in the repository and must be created for each installation of Medic. Create them from their respective `.sample` files.
 
 ## Slaves
 
@@ -161,6 +162,8 @@ In general, when any of the files in the master directory are changed, a restart
 **cordova-config.json**: Installation-specific file that defines miscellaneous parameters like CouchDB host and port, and email credentials. *Only a sample of this file is provided in the repo, with a `.sample` extension.*
 
 **private.py**: Python file containing sensitive configuration. *Only a sample of this file is provided in the repo, with a `.sample` extension.*
+
+**github.passwd**: File containing one line: a username and password for authenticating GitHub hooks. *Only a sample of this file is provided in the repo, with a `.sample` extension.*
 
 [couchdb]:          http://couchdb.apache.org/
 [python]:           https://www.python.org/downloads/
