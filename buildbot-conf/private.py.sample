@@ -5,3 +5,4 @@ webAuthPwd  = 'password'
 
 cordovaOSXSlavePwd     = 'password'
 cordovaWindowsSlavePwd = 'password'
+githubSecret           = 'password'
