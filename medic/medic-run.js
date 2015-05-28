@@ -35,7 +35,7 @@ var testwait = require("../lib/testwait");
 // constants
 var CORDOVA_MEDIC_DIR       = "cordova-medic";
 var DEFAULT_APP_PATH        = "mobilespec";
-var CORDOVA_ERROR_PATTERN   = /^ERROR/;
+var CORDOVA_ERROR_PATTERN   = /^ERROR/im;
 var DEFAULT_APP_ENTRY       = "index.html";
 var ANDROID_TIMEOUT         = 120000; // in milliseconds
 var MEDIC_BUILD_PREFIX      = "medic-cli-build";
