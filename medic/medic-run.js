@@ -181,7 +181,7 @@ function setWindowsTargetStoreVersion(appPath, version) {
 function androidSpecificPreparation(argv) {
 
     var appPath   = argv.app;
-    var extraArgs = "--ant";
+    var extraArgs = "--gradle";
 
     changeAndroidLoadTimeout(appPath, ANDROID_TIMEOUT);
 
