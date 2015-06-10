@@ -53,28 +53,38 @@ function main() {
 
             var numFailures = testResults.mobilespec.failures;
             var numSpecs    = testResults.mobilespec.specs;
+            var resultsURI  = couchdbURI + "/_utils/document.html?mobilespec_results/" + testResults._id;
 
             var counts = {
                 total:    numSpecs,
                 failed:   numFailures,
                 passed:   numSpecs - numFailures,
                 warnings: 0,
-            }
+            };
 
+            // write out results if an output path was passed
             if (outputPath) {
                 fs.writeFileSync(outputPath, JSON.stringify(counts) + "\n", util.DEFAULT_ENCODING);
             }
 
+            console.log("Results at " + resultsURI);
+
             if (typeof numFailures === "undefined" || numFailures === 0) {
-                console.log("No failures were detected");
+                console.log("No failures were detected.");
+
             } else {
                 console.log("Total failures: " + numFailures);
-                console.log("Test failures were detected. Open " + couchdbURI + "/_utils/document.html?mobilespec_results/" + testResults._id + " for details");
                 console.log("Failing tests:");
-    
+
                 testResults.mobilespec.results.forEach(function (result) {
                     if (result.status === "failed") {
                         console.log(result.fullName);
+                        result.failedExpectations.forEach(function (expectation) {
+                            console.log("    " + expectation.message);
+                            expectation.stack.split('\n').forEach(function (traceLine) {
+                                console.log("        " + traceLine);
+                            });
+                        });
                     }
                 });
             }
