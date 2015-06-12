@@ -30,6 +30,9 @@ var optimist = require("optimist");
 var util      = require("../lib/util");
 var testcheck = require("../lib/testcheck");
 
+// constants
+var INDENT = "    ";
+
 function main() {
 
     // get args
@@ -76,14 +79,22 @@ function main() {
                 console.log("Total failures: " + numFailures);
                 console.log("Failing tests:");
 
+                // print failures
                 testResults.mobilespec.results.forEach(function (result) {
+
                     if (result.status === "failed") {
-                        console.log(result.fullName);
+                        console.log(INDENT + result.fullName);
+
+                        // print all failed expectations
                         result.failedExpectations.forEach(function (expectation) {
-                            console.log("    " + expectation.message);
-                            expectation.stack.split('\n').forEach(function (traceLine) {
-                                console.log("        " + traceLine);
-                            });
+                            console.log(INDENT + INDENT + expectation.message);
+
+                            // print the stack trace if it exists
+                            if (typeof expectation.stack !== "undefined") {
+                                expectation.stack.split('\n').forEach(function (traceLine) {
+                                    console.log(INDENT + INDENT + INDENT + traceLine);
+                                });
+                            }
                         });
                     }
                 });
