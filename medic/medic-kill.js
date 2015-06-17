@@ -43,6 +43,7 @@ function tasksOnPlatform(platformName) {
             } else {
                 return ["emulator64-x86", "emulator64-arm", "adb"];
             }
+            break;
         case util.BLACKBERRY:
             return [];
         default:
@@ -52,12 +53,15 @@ function tasksOnPlatform(platformName) {
 
 function getKillCommand(taskNames) {
 
+    var cli;
+    var args;
+
     if (util.isWindows()) {
-        var cli  = "taskkill /F";
-        var args = taskNames.map(function (name) { return "/IM \"" + name + "\""; });
+        cli  = "taskkill /F";
+        args = taskNames.map(function (name) { return "/IM \"" + name + "\""; });
     } else {
-        var cli  = "killall -9";
-        var args = taskNames.map(function (name) { return "\"" + name + "\""; });
+        cli  = "killall -9";
+        args = taskNames.map(function (name) { return "\"" + name + "\""; });
     }
 
     return cli + " " + args.join(" ");

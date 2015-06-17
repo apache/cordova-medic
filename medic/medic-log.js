@@ -23,11 +23,41 @@
 
 "use strict";
 
-var fs = require("fs");
-
 var shelljs  = require("shelljs");
 var optimist = require("optimist");
-var util     = require("../lib/util");
+
+var util = require("../lib/util");
+
+// helpers
+function logAndroid() {
+
+    var command = "adb logcat -d";
+
+    util.medicLog("running:");
+    util.medicLog("    " + command);
+
+    shelljs.exec(command, function (code, output) {
+        if (code > 0) {
+            util.fatal("Failed to run logcat command.");
+        }
+    });
+}
+
+function logBlackberry() {
+    return;
+}
+
+function logIOS() {
+    return;
+}
+
+function logWindows() {
+    return;
+}
+
+function logWP8() {
+    return;
+}
 
 // main
 function main() {
@@ -39,21 +69,29 @@ function main() {
     // command-specific args
     var argv = optimist
         .usage("Usage: $0 {platform}")
-        .demand('platform')
+        .demand("platform")
         .argv;
 
-    switch (argv.platform) {
+    var platform = argv.platform;
+
+    switch (platform) {
         case util.ANDROID:
-            var cmd = "adb logcat -d";
-            console.log("executing " + cmd);
-            shelljs.exec(cmd, function(code, output) {
-                if (code > 0) {
-                    util.fatal('Failed to run logcat command.');
-                }
-            });
+            logAndroid();
+            break;
+        case util.BLACKBERRY:
+            logBlackberry();
+            break;
+        case util.IOS:
+            logIOS();
+            break;
+        case util.WINDOWS:
+            logWindows();
+            break;
+        case util.WP8:
+            logWP8();
             break;
         default:
-            console.warn("Logging is unsupported for " + argv.platform);
+            console.warn("Logging is unsupported for " + platform);
             break;
     }
 }

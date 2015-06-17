@@ -35,7 +35,7 @@ function cloneProject(projectName, projectsConfig) {
 
     var project  = projectsConfig[projectName];
     var codebase = project.codebases[project.codebase];
-    var command  = "git clone " + codebase.repo + " --branch=" + codebase.branch + " --depth 1"
+    var command  = "git clone " + codebase.repo + " --branch=" + codebase.branch + " --depth 1";
 
     shelljs.exec(command, {silent: false, async: true}, function (returnCode, output) {
         if (returnCode !== 0) {

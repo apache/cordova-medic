@@ -49,7 +49,7 @@ function main() {
     var couchdbURI = argv.couchdb;
     var outputPath = argv.file;
 
-    console.log('Getting test results for ' + buildId);
+    console.log("Getting test results for " + buildId);
 
     testcheck(buildId, couchdbURI).done(
         function onFulfilled(testResults) {
@@ -91,7 +91,7 @@ function main() {
 
                             // print the stack trace if it exists
                             if (typeof expectation.stack !== "undefined") {
-                                expectation.stack.split('\n').forEach(function (traceLine) {
+                                expectation.stack.split("\n").forEach(function (traceLine) {
                                     console.log(INDENT + INDENT + INDENT + traceLine);
                                 });
                             }

@@ -20,5 +20,8 @@
       "name": "Don Coleman",
       "email": "don.coleman@gmail.com"
     }
-  ]
+  ],
+  "scripts": {
+    "jshint": "jshint medic lib"
+  }
 }

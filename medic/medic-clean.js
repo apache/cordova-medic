@@ -50,15 +50,33 @@ function main() {
 
     // get args
     var argv = optimist
-        .usage("Usage: $0 --exclude {name[,name[,...]]}")
+        .usage("Usage: $0 PATH --exclude NAME [--exclude NAME [...]]")
+        .demand(1)
         .argv;
 
-    var excludeString = argv.exclude;
-    var excludedPaths = [".", ".."];
+    var root     = argv._[0];
+    var excludes = argv.exclude;
 
-    // parse excludes
-    if (argv.exclude) {
-        excludedPaths = excludedPaths.concat(excludeString.split(","));
+    // check for valid args
+    if (argv._.length > 1) {
+        util.fatal("can only clean one directory at a time, but " + argv._.length + " were passed");
+    }
+
+    // check for valid root
+    if (!fs.existsSync(root)) {
+        util.fatal(root + " does not exist");
+    } else {
+        shelljs.cd(root);
+    }
+
+    // compute excludes
+    var excludedPaths = [".", ".."];
+    if (typeof excludes !== "undefined") {
+        if (typeof excludes === "string") {
+            excludedPaths.push(excludes);
+        } else {
+            excludedPaths = excludedPaths.concat(excludes);
+        }
     }
 
     // get all directories except excluded ones

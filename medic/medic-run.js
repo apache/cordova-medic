@@ -167,13 +167,13 @@ function changeAndroidLoadTimeout(appPath, timeout) {
 
 function setWindowsTargetStoreVersion(appPath, version) {
 
-    util.medicLog('setting target store version to ' + version);
+    util.medicLog("setting target store version to " + version);
 
     var configFile    = getConfigPath(appPath);
     var configContent = fs.readFileSync(configFile, util.DEFAULT_ENCODING);
 
-    var versionPreference = '    <preference name="windows-target-version" value="' + version + '" />';
-    configContent = configContent.replace('</widget>', versionPreference + '\r\n</widget>');
+    var versionPreference = "    <preference name=\"windows-target-version\" value=\"" + version + "\" />";
+    configContent = configContent.replace("</widget>", versionPreference + "\r\n</widget>");
 
     fs.writeFileSync(configFile, configContent, "utf8");
 }
@@ -215,25 +215,25 @@ function windowsSpecificPreparation(argv) {
     // patch WindowsStoreAppUtils script to allow app run w/out active desktop/remote session
     if (winVersion === "store80" || winVersion === "store") {
 
-        util.medicLog('Patching WindowsStoreAppUtils to allow app to be run in automated mode');
+        util.medicLog("Patching WindowsStoreAppUtils to allow app to be run in automated mode");
 
-        var platformPath   = path.join(appPath, 'platforms', 'windows');
-        var libPath        = path.join(platformPath, 'cordova', 'lib');
-        var appUtilsPath   = path.join(libPath, 'WindowsStoreAppUtils.ps1');
-        var srcScriptPath  = path.join('cordova-medic', 'lib', 'patches', 'EnableDebuggingForPackage.ps1');
-        var destScriptPath = path.join(libPath, 'EnableDebuggingForPackage.ps1');
+        var platformPath   = path.join(appPath, "platforms", "windows");
+        var libPath        = path.join(platformPath, "cordova", "lib");
+        var appUtilsPath   = path.join(libPath, "WindowsStoreAppUtils.ps1");
+        var srcScriptPath  = path.join(CORDOVA_MEDIC_DIR, "lib", "patches", "EnableDebuggingForPackage.ps1");
+        var destScriptPath = path.join(libPath, "EnableDebuggingForPackage.ps1");
 
         // copy over the patch
-        shelljs.cp('-f', srcScriptPath, libPath);
+        shelljs.cp("-f", srcScriptPath, libPath);
 
         // add extra code to patch
         shelljs.sed(
-            '-i',
+            "-i",
             /^\s*\$appActivator .*$/gim,
-            '$&\n' +
-            '    powershell ' + path.join(process.cwd(), destScriptPath) + ' $$ID\n' +
-            '    $Ole32 = Add-Type -MemberDefinition \'[DllImport("Ole32.dll")]public static extern int CoAllowSetForegroundWindow(IntPtr pUnk, IntPtr lpvReserved);\' -Name \'Ole32\' -Namespace \'Win32\' -PassThru\n' +
-            '    $Ole32::CoAllowSetForegroundWindow([System.Runtime.InteropServices.Marshal]::GetIUnknownForObject($appActivator), [System.IntPtr]::Zero)',
+            "$&\n" +
+            "    powershell " + path.join(process.cwd(), destScriptPath) + " $$ID\n" +
+            "    $Ole32 = Add-Type -MemberDefinition '[DllImport(\"Ole32.dll\")]public static extern int CoAllowSetForegroundWindow(IntPtr pUnk, IntPtr lpvReserved);' -Name 'Ole32' -Namespace 'Win32' -PassThru\n" +
+            "    $Ole32::CoAllowSetForegroundWindow([System.Runtime.InteropServices.Marshal]::GetIUnknownForObject($appActivator), [System.IntPtr]::Zero)",
             appUtilsPath
         );
     }
@@ -246,24 +246,24 @@ function wp8SpecificPreparation(argv) {
     var appPath = argv.app;
 
     // set permanent guid to prevent multiple installations
-    var guid         = '{8449DEEE-16EB-4A4A-AFCC-8446E8F06FF7}';
-    var manifestPath = path.join(appPath, 'platforms', 'wp8', 'Properties', 'WMAppManifest.xml');
-    var xml          = fs.readFileSync(manifestPath).toString().split('\n');
+    var guid         = "{8449DEEE-16EB-4A4A-AFCC-8446E8F06FF7}";
+    var manifestPath = path.join(appPath, "platforms", "wp8", "Properties", "WMAppManifest.xml");
+    var xml          = fs.readFileSync(manifestPath).toString().split("\n");
 
-    for (var i in xml) if (xml[i].indexOf('<App') != -1) {
-        if (xml[i].toLowerCase().indexOf('productid') != -1) {
-            var index = xml[i].toLowerCase().indexOf('productid');
-            var spaceIndex = xml[i].indexOf(' ', index);
-            var stringAsArray = xml[i].split('');
+    for (var i in xml) if (xml[i].indexOf("<App") != -1) {
+        if (xml[i].toLowerCase().indexOf("productid") != -1) {
+            var index = xml[i].toLowerCase().indexOf("productid");
+            var spaceIndex = xml[i].indexOf(" ", index);
+            var stringAsArray = xml[i].split("");
             stringAsArray.splice(index, spaceIndex - index);
-            xml[i] = stringAsArray.join('');
+            xml[i] = stringAsArray.join("");
         }
         xml[i] = xml[i].substr(0, xml[i].length - 1);
-        xml[i] += ' ProductID="' + guid + '">';
+        xml[i] += " ProductID=\"" + guid + "\">";
         break;
     }
 
-    fs.writeFileSync(manifestPath, xml.join('\n'));
+    fs.writeFileSync(manifestPath, xml.join("\n"));
 
     var extraArgs = "";
     return extraArgs;
@@ -338,7 +338,7 @@ function main() {
     util.medicLog("running:");
     util.medicLog("    " + buildCommand);
     var result = shelljs.exec(buildCommand, {silent: false, async: false});
-    if (result.code != 0 || CORDOVA_ERROR_PATTERN.test(result.output)) {
+    if (result.code !== 0 || CORDOVA_ERROR_PATTERN.test(result.output)) {
         util.fatal("build failed");
     }
 
@@ -348,7 +348,7 @@ function main() {
     util.medicLog("running:");
     util.medicLog("    " + runCommand);
     shelljs.exec(runCommand, {silent: false, async: true}, function (returnCode, output) {
-        if (returnCode != 0 || CORDOVA_ERROR_PATTERN.test(output)) {
+        if (returnCode !== 0 || CORDOVA_ERROR_PATTERN.test(output)) {
             util.fatal("run failed");
         }
     });
