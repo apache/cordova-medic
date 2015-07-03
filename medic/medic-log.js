@@ -25,6 +25,8 @@
 
 var shelljs  = require("shelljs");
 var optimist = require("optimist");
+var fs       = require("fs");
+var xml2js   = require("xml2js");
 
 var util = require("../lib/util");
 
@@ -52,7 +54,57 @@ function logIOS() {
 }
 
 function logWindows() {
-    return;
+    var startTime = fs.readFileSync("startTime.txt", util.DEFAULT_ENCODING);
+    var command = "wevtutil qe Microsoft-Windows-AppHost/ApplicationTracing /q:\"*[System [(TimeCreated [@SystemTime>'" + startTime + "'])]]\"";
+
+    util.medicLog("running:");
+    util.medicLog("    " + command);
+
+    shelljs.exec(command, { silent: true }, function (code, output) {
+        output = '<root>' + output + '</root>';
+
+        if (code != 0) {
+            util.fatal("Failed to run wevtutil command.");
+        } else {
+            xml2js.parseString(output, function (err, result) {
+                if (err) {
+                    util.fatal("An error occured while parsing events XML: " + JSON.stringify(err));
+                } else if (result && result.root && result.root.Event) {
+                    var formattedJson = result.root.Event.map(function (event) {
+                        var ts, proc, src, msg;
+                        try {
+                            ts = event.System[0].TimeCreated[0].$.SystemTime;
+                        } catch (err) { }
+                        try {
+                            proc = event.UserData[0].WWADevToolBarLog[0].DisplayName[0]
+                        } catch (err) { }
+                        try {
+                            src = event.UserData[0].WWADevToolBarLog[0].Source[0];
+                        } catch (err) { }
+                        try {
+                            msg = event.UserData[0].WWADevToolBarLog[0].Message[0];
+                        } catch (err) { }
+
+                        return { "timestamp": ts, "process": proc, "source": src, "message": msg };
+                    });
+                    formattedJson.filter(function (event) {
+                        if (event.message) {
+                            return true;
+                        }
+                        return false;
+                    }).forEach(function (event) {
+                        var timestamp = event.timestamp + ' ';
+                        var proc = event.process ? event.process + ' ' : '';
+                        var source = event.source || '';
+                        console.log(timestamp + proc + source + ' -> ' + event.message);
+                    });
+                } else {
+                    util.medicLog("No logs to display :(");
+                }
+
+            });
+        }
+    });
 }
 
 function logWP8() {
