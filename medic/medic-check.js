@@ -83,7 +83,10 @@ function main() {
                 testResults.mobilespec.results.forEach(function (result) {
 
                     if (result.status === "failed") {
-                        console.log(INDENT + result.fullName);
+                        var RED_COLOR = "\033[31m";
+                        var NO_COLOR  = "\033[m";
+
+                        console.log(INDENT + RED_COLOR + result.fullName + NO_COLOR);
 
                         // print all failed expectations
                         result.failedExpectations.forEach(function (expectation) {
