@@ -222,6 +222,7 @@ function windowsSpecificPreparation(argv) {
         var appUtilsPath   = path.join(libPath, "WindowsStoreAppUtils.ps1");
         var srcScriptPath  = path.join(CORDOVA_MEDIC_DIR, "lib", "patches", "EnableDebuggingForPackage.ps1");
         var destScriptPath = path.join(libPath, "EnableDebuggingForPackage.ps1");
+        var logScriptPath  = path.join(CORDOVA_MEDIC_DIR, "lib", "patches", "EnableLogging.ps1");
 
         // copy over the patch
         shelljs.cp("-f", srcScriptPath, libPath);
@@ -232,11 +233,17 @@ function windowsSpecificPreparation(argv) {
             /^\s*\$appActivator .*$/gim,
             "$&\n" +
             "    powershell " + path.join(process.cwd(), destScriptPath) + " $$ID\n" +
+            "    powershell " + path.join(process.cwd(), logScriptPath) + "\n" +
             "    $Ole32 = Add-Type -MemberDefinition '[DllImport(\"Ole32.dll\")]public static extern int CoAllowSetForegroundWindow(IntPtr pUnk, IntPtr lpvReserved);' -Name 'Ole32' -Namespace 'Win32' -PassThru\n" +
             "    $Ole32::CoAllowSetForegroundWindow([System.Runtime.InteropServices.Marshal]::GetIUnknownForObject($appActivator), [System.IntPtr]::Zero)",
             appUtilsPath
         );
     }
+
+    // write current time to a file to use it when gathering logs
+    var now = new Date();
+    var iso = now.toISOString();
+    fs.writeFileSync('startTime.txt', iso, util.DEFAULT_ENCODING);
 
     return extraArgs;
 }
