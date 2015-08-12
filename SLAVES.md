@@ -62,6 +62,11 @@ For Windows slaves, Visual Studio is required. For deployment to devices, a Wind
 
     Show-WindowsDeveloperLicenseRegistration
 
+In order for medic to be able to gather and display detailed logs when running windows store apps, you'll also need to enable some of the windows logs channels. Please run the following commands in a command prompt with administrator privileges:
+
+     wevtutil set-log "Microsoft-Windows-AppHost/Admin" /e:true /rt:true /ms:4194304
+     wevtutil set-log "Microsoft-Windows-AppHost/ApplicationTracing" /e:true /rt:true /ms:4194304
+
 ## Connecting to Apache's Master
 
 There is an installation of Buildbot running on Apache Infrastructure, which can be reached at [ci.cordova.io][ci], and which also runs Medic builds. To connect a slave to this master, the following few extra steps are required:

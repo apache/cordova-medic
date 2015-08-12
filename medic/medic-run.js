@@ -25,12 +25,15 @@
 
 var fs   = require("fs");
 var path = require("path");
+var cp   = require("child_process");
 
 var shelljs  = require("shelljs");
 var optimist = require("optimist");
 
 var util     = require("../lib/util");
 var testwait = require("../lib/testwait");
+
+var logProcess;
 
 // constants
 var CORDOVA_MEDIC_DIR       = "cordova-medic";
@@ -238,6 +241,25 @@ function windowsSpecificPreparation(argv) {
         );
     }
 
+    // start logging
+    var logScriptPath = path.join(platformPath, 'cordova', 'log');
+    if (fs.existsSync(logScriptPath)) {
+        util.medicLog('Running windows log script')
+        logProcess = cp.fork(logScriptPath, [], { silent: true });
+
+        logProcess.stdout.on('data', function (data) {
+            fs.appendFileSync('./out.log', data, { encoding: util.DEFAULT_ENCODING });
+        });
+        logProcess.stderr.on('data', function (data) {
+            util.medicLog('Logging script STDERR: ' + data);
+            fs.appendFileSync('./out.log', data, { encoding: util.DEFAULT_ENCODING });
+        });
+        logProcess.on('close', function () {
+            // clear logProcess variable if logging process has exited so we won't try to kill it later
+            logProcess = null;
+        });
+    }
+
     return extraArgs;
 }
 
@@ -363,10 +385,12 @@ function main() {
     testwait.init(couchdbURI);
     testwait.waitTestsCompleted(buildId, timeout * 1000).then(
         function onFulfilled(value) {
+            logProcess && logProcess.kill('SIGINT');
             util.medicLog("got test results");
             process.exit(0);
         },
         function onRejected(error) {
+            logProcess && logProcess.kill('SIGINT');
             console.error("didn't get test results: " + error);
             process.exit(1);
         }

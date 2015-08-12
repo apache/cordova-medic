@@ -25,6 +25,7 @@
 
 var shelljs  = require("shelljs");
 var optimist = require("optimist");
+var fs       = require('fs');
 
 var util = require("../lib/util");
 
@@ -52,7 +53,17 @@ function logIOS() {
 }
 
 function logWindows() {
-    return;
+    fs.readFile('./out.log', { encoding: util.DEFAULT_ENCODING }, function(err, log) {
+        if (err) {
+            if (err.toString().indexOf('ENOENT') > -1) {
+                throw new Error('Couldn\'t find log file. It may be because of old cordova-windows version or some problems with log script.');
+            } else {
+                throw err;
+            }
+        } else {
+            console.log(log);
+        }
+    });
 }
 
 function logWP8() {
