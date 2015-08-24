@@ -25,7 +25,8 @@
 
 var shelljs  = require("shelljs");
 var optimist = require("optimist");
-var fs       = require('fs');
+var fs       = require("fs");
+var path     = require("path");
 
 var util = require("../lib/util");
 
@@ -49,14 +50,24 @@ function logBlackberry() {
 }
 
 function logIOS() {
-    return;
+    var logScriptpath = path.join("mobilespec", "platforms", "ios", "cordova", "console.log");
+    var command = "cat " + logScriptpath;
+
+    util.medicLog("running:");
+    util.medicLog("    " + command);
+
+    shelljs.exec(command, function (code, output) {
+        if (code > 0) {
+            util.fatal("Failed to run log command.");
+        }
+    });
 }
 
 function logWindows() {
-    fs.readFile('./out.log', { encoding: util.DEFAULT_ENCODING }, function(err, log) {
+    fs.readFile("./out.log", { encoding: util.DEFAULT_ENCODING }, function(err, log) {
         if (err) {
-            if (err.toString().indexOf('ENOENT') > -1) {
-                throw new Error('Couldn\'t find log file. It may be because of old cordova-windows version or some problems with log script.');
+            if (err.toString().indexOf("ENOENT") > -1) {
+                throw new Error("Couldn't find log file. It may be because of old cordova-windows version or some problems with log script.");
             } else {
                 throw err;
             }
