@@ -239,25 +239,25 @@ function windowsSpecificPreparation(argv) {
             "    $Ole32::CoAllowSetForegroundWindow([System.Runtime.InteropServices.Marshal]::GetIUnknownForObject($appActivator), [System.IntPtr]::Zero)",
             appUtilsPath
         );
-    }
-
-    // start logging
-    var logScriptPath = path.join(platformPath, 'cordova', 'log');
-    if (fs.existsSync(logScriptPath)) {
-        util.medicLog('Running windows log script')
-        logProcess = cp.fork(logScriptPath, [], { silent: true });
-
-        logProcess.stdout.on('data', function (data) {
-            fs.appendFileSync('./out.log', data, { encoding: util.DEFAULT_ENCODING });
-        });
-        logProcess.stderr.on('data', function (data) {
-            util.medicLog('Logging script STDERR: ' + data);
-            fs.appendFileSync('./out.log', data, { encoding: util.DEFAULT_ENCODING });
-        });
-        logProcess.on('close', function () {
-            // clear logProcess variable if logging process has exited so we won't try to kill it later
-            logProcess = null;
-        });
+        
+         // start logging
+        var logScriptPath = path.join(platformPath, 'cordova', 'log');
+        if (fs.existsSync(logScriptPath)) {
+            util.medicLog('Running windows log script')
+            logProcess = cp.fork(logScriptPath, [], { silent: true });
+    
+            logProcess.stdout.on('data', function (data) {
+                fs.appendFileSync('./out.log', data, { encoding: util.DEFAULT_ENCODING });
+            });
+            logProcess.stderr.on('data', function (data) {
+                util.medicLog('Logging script STDERR: ' + data);
+                fs.appendFileSync('./out.log', data, { encoding: util.DEFAULT_ENCODING });
+            });
+            logProcess.on('close', function () {
+                // clear logProcess variable if logging process has exited so we won't try to kill it later
+                logProcess = null;
+            });
+        }
     }
 
     return extraArgs;
