@@ -64,17 +64,14 @@ function logIOS() {
 }
 
 function logWindows() {
-    fs.readFile("./out.log", { encoding: util.DEFAULT_ENCODING }, function(err, log) {
-        if (err) {
-            if (err.toString().indexOf("ENOENT") > -1) {
-                throw new Error("Couldn't find log file. It may be because of old cordova-windows version or some problems with log script.");
-            } else {
-                throw err;
+    var logScriptPath = path.join("mobilespec", "platforms", "windows", "cordova", "log.bat");
+    if (fs.existsSync(logScriptPath)) {
+        shelljs.exec(logScriptPath + " --dump", function (code, output) {
+            if (code > 0) {
+                util.fatal("Failed to run log command.");
             }
-        } else {
-            console.log(log);
-        }
-    });
+        });
+    }
 }
 
 function logWP8() {
