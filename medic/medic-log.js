@@ -66,7 +66,7 @@ function logIOS() {
 function logWindows() {
     var logScriptPath = path.join("mobilespec", "platforms", "windows", "cordova", "log.bat");
     if (fs.existsSync(logScriptPath)) {
-        shelljs.exec(logScriptPath + " --dump", function (code, output) {
+        shelljs.exec(logScriptPath + " --dump --mins 15", function (code, output) {
             if (code > 0) {
                 util.fatal("Failed to run log command.");
             }
