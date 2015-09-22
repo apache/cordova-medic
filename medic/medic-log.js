@@ -63,10 +63,14 @@ function logIOS() {
     });
 }
 
-function logWindows() {
+function logWindows(timeout) {
     var logScriptPath = path.join("mobilespec", "platforms", "windows", "cordova", "log.bat");
     if (fs.existsSync(logScriptPath)) {
-        shelljs.exec(logScriptPath + " --dump --mins 15", function (code, output) {
+        var mins = util.DEFAULT_LOG_TIME;
+        if (timeout) {
+            mins = util.secToMin(timeout) + util.DEFAULT_LOG_TIME_ADDITIONAL;
+        }
+        shelljs.exec(logScriptPath + " --dump --mins " + mins, function (code, output) {
             if (code > 0) {
                 util.fatal("Failed to run log command.");
             }
@@ -87,11 +91,14 @@ function main() {
 
     // command-specific args
     var argv = optimist
-        .usage("Usage: $0 {platform}")
+        .usage("Usage: $0 [options]")
         .demand("platform")
+        .describe("platform", "Gather logs for this platform.")
+        .describe("timeout", "Windows only, gather logs for last n seconds.")
         .argv;
 
     var platform = argv.platform;
+    var timeout = argv.timeout;
 
     switch (platform) {
         case util.ANDROID:
@@ -104,7 +111,7 @@ function main() {
             logIOS();
             break;
         case util.WINDOWS:
-            logWindows();
+            logWindows(timeout);
             break;
         case util.WP8:
             logWP8();
