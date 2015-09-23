@@ -32,7 +32,7 @@ var util = require("../lib/util");
 function tasksOnPlatform(platformName) {
     switch (platformName) {
         case util.WINDOWS:
-            return ["WWAHost.exe"];
+            return ["WWAHost.exe", "Xde.exe"];
         case util.WP8:
             return ["Xde.exe"];
         case util.IOS:
