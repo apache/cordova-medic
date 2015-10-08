@@ -3,6 +3,9 @@
   "version": "0.2.3",
   "description": "continuous integration setup for Apache Cordova",
   "author": "Fil Maj <maj.fil@gmail.com> (http://filmaj.ca)",
+  "bin": {
+    "medic": "./medic/medic.js"
+  },
   "dependencies": {
     "commander": "^2.8.1",
     "follow": "^0.11.4",
