@@ -25,6 +25,10 @@
     }
   ],
   "scripts": {
-    "jshint": "jshint medic lib"
+    "test": "npm run lint",
+    "lint": "node_modules/.bin/jshint medic lib"
+  },
+  "devDependencies": {
+    "jshint": "^2.8.0"
   }
 }

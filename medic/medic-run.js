@@ -25,26 +25,25 @@
 
 var fs   = require("fs");
 var path = require("path");
-var cp   = require("child_process");
 
 var shelljs  = require("shelljs");
 var optimist = require("optimist");
+var request  = require("request");
 
 var util     = require("../lib/util");
 var testwait = require("../lib/testwait");
 
-var logProcess;
-
 // constants
-var CORDOVA_MEDIC_DIR       = "cordova-medic";
-var DEFAULT_APP_PATH        = "mobilespec";
-var CORDOVA_ERROR_PATTERN   = /^ERROR/m;
-var DEFAULT_APP_ENTRY       = "index.html";
-var ANDROID_TIMEOUT         = 120000; // in milliseconds
-var MEDIC_BUILD_PREFIX      = "medic-cli-build";
-var DEFAULT_WINDOWS_VERSION = "store";
-var WINDOWS_VERSION_CHOICES = ["store", "store80", "phone"];
-var DEFAULT_TIMEOUT         = 600; // in seconds
+var CORDOVA_MEDIC_DIR         = "cordova-medic";
+var DEFAULT_APP_PATH          = "mobilespec";
+var CORDOVA_ERROR_PATTERN     = /^ERROR/m;
+var DEFAULT_APP_ENTRY         = "index.html";
+var ANDROID_PAGE_LOAD_TIMEOUT = 120000; // in milliseconds
+var MEDIC_BUILD_PREFIX        = "medic-cli-build";
+var DEFAULT_WINDOWS_VERSION   = "store";
+var WINDOWS_VERSION_CHOICES   = ["store", "store80", "phone"];
+var DEFAULT_TIMEOUT           = 600; // in seconds
+var SERVER_RESPONSE_TIMEOUT   = 3000; // in milliseconds
 
 // helpers
 function currentMillisecond() {
@@ -186,7 +185,7 @@ function androidSpecificPreparation(argv) {
     var appPath   = argv.app;
     var extraArgs = "--gradle";
 
-    changeAndroidLoadTimeout(appPath, ANDROID_TIMEOUT);
+    changeAndroidLoadTimeout(appPath, ANDROID_PAGE_LOAD_TIMEOUT);
 
     return extraArgs;
 }
@@ -313,71 +312,87 @@ function main() {
         util.fatal("app " + appPath + " does not exist");
     }
 
-    // modify the app to run autonomously
-    createMedicJson(appPath, buildId, couchdbURI);
-    setEntryPoint(appPath, entryPoint);
-    addURIToWhitelist(appPath, couchdbURI);
+    util.medicLog("checking if " + couchdbURI + " is up");
 
-    // do platform-specific preparations
-    var platformArgs = "";
-    if (platform === util.ANDROID) {
-        platformArgs = androidSpecificPreparation(argv);
-    } else if (platform === util.WINDOWS) {
-        platformArgs = windowsSpecificPreparation(argv);
-    } else if (platform === util.WP8) {
-        platformArgs = wp8SpecificPreparation(argv);
-    }
+    // check if results server is up
+    request({
+        uri:     couchdbURI,
+        method:  "GET",
+        timeout: SERVER_RESPONSE_TIMEOUT
+    },
+    function (error, response, body) {
 
-    // enter the app directory
-    shelljs.pushd(appPath);
-
-    // compose commands
-    var buildCommand = cli + " build " + platform + " -- " + platformArgs;
-    var runCommand   = cli + " run " + platform + " -- " + platformArgs;
-
-    // build the code
-    // NOTE:
-    //      this is SYNCHRONOUS
-    util.medicLog("running:");
-    util.medicLog("    " + buildCommand);
-    var result = shelljs.exec(buildCommand, {silent: false, async: false});
-    if (result.code !== 0 || CORDOVA_ERROR_PATTERN.test(result.output)) {
-        util.fatal("build failed");
-    }
-
-    // run the code
-    // NOTE:
-    //      this is ASYNCHRONOUS
-    util.medicLog("running:");
-    util.medicLog("    " + runCommand);
-    shelljs.exec(runCommand, {silent: false, async: true}, function (returnCode, output) {
-        if (returnCode !== 0 || CORDOVA_ERROR_PATTERN.test(output)) {
-            util.fatal("run failed");
-        }
-    });
-
-    // exit the app directory
-    shelljs.popd();
-
-    // wait for test results
-    // NOTE:
-    //      timeout needs to be in milliseconds, but it's
-    //      given in seconds, so we multiply by 1000
-    testwait.init(couchdbURI);
-    testwait.waitTestsCompleted(buildId, timeout * 1000).then(
-        function onFulfilled(value) {
-            logProcess && logProcess.kill('SIGINT');
-            util.medicLog("got test results");
-            process.exit(0);
-        },
-        function onRejected(error) {
-            logProcess && logProcess.kill('SIGINT');
-            console.error("didn't get test results: " + error);
+        // bail if the results server is down
+        if (error || response.statusCode !== 200) {
+            util.fatal("results server is down, so test run can't be monitored");
             process.exit(1);
         }
-    );
 
-    util.medicLog("waiting for test results ...");
+        // modify the app to run autonomously
+        createMedicJson(appPath, buildId, couchdbURI);
+        setEntryPoint(appPath, entryPoint);
+        addURIToWhitelist(appPath, couchdbURI);
+
+        // do platform-specific preparations
+        var platformArgs = "";
+        if (platform === util.ANDROID) {
+            platformArgs = androidSpecificPreparation(argv);
+        } else if (platform === util.WINDOWS) {
+            platformArgs = windowsSpecificPreparation(argv);
+        } else if (platform === util.WP8) {
+            platformArgs = wp8SpecificPreparation(argv);
+        }
+
+        // enter the app directory
+        shelljs.pushd(appPath);
+
+        // compose commands
+        var buildCommand = cli + " build " + platform + " -- " + platformArgs;
+        var runCommand   = cli + " run " + platform + " -- " + platformArgs;
+
+        // build the code
+        // NOTE:
+        //      this is SYNCHRONOUS
+        util.medicLog("running:");
+        util.medicLog("    " + buildCommand);
+        var result = shelljs.exec(buildCommand, {silent: false, async: false});
+        if (result.code !== 0 || CORDOVA_ERROR_PATTERN.test(result.output)) {
+            util.fatal("build failed");
+        }
+
+        // run the code
+        // NOTE:
+        //      this is ASYNCHRONOUS
+        util.medicLog("running:");
+        util.medicLog("    " + runCommand);
+        shelljs.exec(runCommand, {silent: false, async: true}, function (returnCode, output) {
+            if (returnCode !== 0 || CORDOVA_ERROR_PATTERN.test(output)) {
+                util.fatal("run failed");
+            }
+        });
+
+        // exit the app directory
+        shelljs.popd();
+
+        // wait for test results
+        // NOTE:
+        //      timeout needs to be in milliseconds, but it's
+        //      given in seconds, so we multiply by 1000
+        testwait.init(couchdbURI);
+        testwait.waitTestsCompleted(buildId, timeout * 1000).then(
+            function onFulfilled(value) {
+                util.medicLog("got test results");
+                process.exit(0);
+            },
+            function onRejected(error) {
+                console.error("didn't get test results: " + error);
+                process.exit(1);
+            }
+        );
+
+        util.medicLog("waiting for test results ...");
+
+    }); // request(couchdbURI)
 }
 
 main();
