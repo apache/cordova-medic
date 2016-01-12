@@ -37,6 +37,7 @@ var testwait = require("../lib/testwait");
 var CORDOVA_MEDIC_DIR         = "cordova-medic";
 var DEFAULT_APP_PATH          = "mobilespec";
 var CORDOVA_ERROR_PATTERN     = /^ERROR/m;
+var NO_DEVICE_PATTERN         = /(^.*no .* was detected)|(^.*no devices found)/m;
 var DEFAULT_APP_ENTRY         = "index.html";
 var ANDROID_PAGE_LOAD_TIMEOUT = 120000; // in milliseconds
 var MEDIC_BUILD_PREFIX        = "medic-cli-build";
@@ -279,6 +280,17 @@ function getLocalCLI() {
     }
 }
 
+function cordovaReturnedError(returnCode, output) {
+    if (returnCode !== 0 || CORDOVA_ERROR_PATTERN.test(output)) {
+        return true;
+    }
+    return false;
+}
+
+function failedBecauseNoDevice(output) {
+    return NO_DEVICE_PATTERN.test(output);
+}
+
 // main
 function main() {
 
@@ -324,8 +336,10 @@ function main() {
 
         // bail if the results server is down
         if (error || response.statusCode !== 200) {
-            util.fatal("results server is down, so test run can't be monitored");
+            util.fatal("it's not up, so test run can't be monitored");
             process.exit(1);
+        } else {
+            util.medicLog("it's up");
         }
 
         // modify the app to run autonomously
@@ -343,38 +357,7 @@ function main() {
             platformArgs = wp8SpecificPreparation(argv);
         }
 
-        // enter the app directory
-        shelljs.pushd(appPath);
-
-        // compose commands
-        var buildCommand = cli + " build " + platform + " -- " + platformArgs;
-        var runCommand   = cli + " run --device " + platform + " -- " + platformArgs;
-
-        // build the code
-        // NOTE:
-        //      this is SYNCHRONOUS
-        util.medicLog("running:");
-        util.medicLog("    " + buildCommand);
-        var result = shelljs.exec(buildCommand, {silent: false, async: false});
-        if (result.code !== 0 || CORDOVA_ERROR_PATTERN.test(result.output)) {
-            util.fatal("build failed");
-        }
-
-        // run the code
-        // NOTE:
-        //      this is ASYNCHRONOUS
-        util.medicLog("running:");
-        util.medicLog("    " + runCommand);
-        shelljs.exec(runCommand, {silent: false, async: true}, function (returnCode, output) {
-            if (returnCode !== 0 || CORDOVA_ERROR_PATTERN.test(output)) {
-                util.fatal("run failed");
-            }
-        });
-
-        // exit the app directory
-        shelljs.popd();
-
-        // wait for test results
+        // start waiting for test results
         // NOTE:
         //      timeout needs to be in milliseconds, but it's
         //      given in seconds, so we multiply by 1000
@@ -389,8 +372,48 @@ function main() {
                 process.exit(1);
             }
         );
+        util.medicLog("started waiting for test results");
 
-        util.medicLog("waiting for test results ...");
+        // enter the app directory
+        util.medicLog("moving into " + appPath);
+        shelljs.pushd(appPath);
+
+        // compose commands
+        var buildCommand       = cli + " build " + platform + " -- " + platformArgs;
+        var runCommandEmulator = cli + " run --emulator " + platform + " -- " + platformArgs;
+        var runCommandDevice   = cli + " run --device " + platform + " -- " + platformArgs;
+
+        // build the code
+        // NOTE:
+        //      this is SYNCHRONOUS
+        util.medicLog("running:");
+        util.medicLog("    " + buildCommand);
+        var result = shelljs.exec(buildCommand, {silent: false, async: false});
+        if (cordovaReturnedError(result.code, result.output)) {
+            util.fatal("build failed");
+        }
+
+        // run the code
+        // NOTE:
+        //      this is ASYNCHRONOUS
+        util.medicLog("running:");
+        util.medicLog("    " + runCommandDevice);
+        shelljs.exec(runCommandDevice, {silent: false, async: true}, function (returnCode, output) {
+            if (failedBecauseNoDevice(output)) {
+                util.medicLog("no device found, so switching to emulator");
+                util.medicLog("running:");
+                util.medicLog("    " + runCommandEmulator);
+                shelljs.exec(runCommandEmulator, {silent: false, async: true}, function (returnCode, output) {
+                    if (cordovaReturnedError(returnCode, output)) {
+                        util.fatal("running on emulator failed");
+                    }
+                });
+            } else {
+                if (cordovaReturnedError(returnCode, output)) {
+                    util.fatal("running on device failed");
+                }
+            }
+        });
 
     }); // request(couchdbURI)
 }
