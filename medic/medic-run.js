@@ -348,7 +348,7 @@ function main() {
 
         // compose commands
         var buildCommand = cli + " build " + platform + " -- " + platformArgs;
-        var runCommand   = cli + " run " + platform + " -- " + platformArgs;
+        var runCommand   = cli + " run --device " + platform + " -- " + platformArgs;
 
         // build the code
         // NOTE:
