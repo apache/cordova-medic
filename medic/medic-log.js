@@ -30,15 +30,34 @@ var path     = require("path");
 
 var util = require("../lib/util");
 
+// constants
+var DEVICE_ROW_PATTERN = / (emulator|device|host) /m;
+
 // helpers
 function logAndroid() {
 
-    var command = "adb logcat -d";
+    var logCommand = "adb logcat -d";
+    var listCommand = "adb devices";
 
     util.medicLog("running:");
-    util.medicLog("    " + command);
+    util.medicLog("    " + listCommand);
 
-    shelljs.exec(command, function (code, output) {
+    // bail out if there is more/less than one device
+    var numDevices = 0;
+    var result = shelljs.exec(listCommand, {silent: false, async: false});
+    result.output.split('\n').forEach(function (line) {
+        if (DEVICE_ROW_PATTERN.test(line)) {
+            numDevices += 1;
+        }
+    });
+    if (numDevices != 1) {
+        util.fatal("there must be exactly one emulator/device attached");
+    }
+
+    // log the output
+    util.medicLog("running:");
+    util.medicLog("    " + logCommand);
+    shelljs.exec(logCommand, {silent: false, async: false}, function (code, output) {
         if (code > 0) {
             util.fatal("Failed to run logcat command.");
         }
