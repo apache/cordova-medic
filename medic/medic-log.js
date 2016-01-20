@@ -31,7 +31,8 @@ var path     = require("path");
 var util = require("../lib/util");
 
 // constants
-var DEVICE_ROW_PATTERN = / (emulator|device|host) /m;
+var DEVICE_ROW_PATTERN = /(emulator|device|host)/m;
+var HEADING_LINE_PATTERN = /List of devices/m;
 
 // helpers
 function logAndroid() {
@@ -46,7 +47,7 @@ function logAndroid() {
     var numDevices = 0;
     var result = shelljs.exec(listCommand, {silent: false, async: false});
     result.output.split('\n').forEach(function (line) {
-        if (DEVICE_ROW_PATTERN.test(line)) {
+        if (!HEADING_LINE_PATTERN.test(line) && DEVICE_ROW_PATTERN.test(line)) {
             numDevices += 1;
         }
     });
