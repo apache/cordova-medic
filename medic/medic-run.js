@@ -44,7 +44,9 @@ var MEDIC_BUILD_PREFIX        = "medic-cli-build";
 var DEFAULT_WINDOWS_VERSION   = "store";
 var WINDOWS_VERSION_CHOICES   = ["store", "store80", "phone"];
 var DEFAULT_TIMEOUT           = 600; // in seconds
-var SERVER_RESPONSE_TIMEOUT   = 3000; // in milliseconds
+var SERVER_RESPONSE_TIMEOUT   = 15000; // in milliseconds
+var MAX_NUMBER_OF_TRIES       = 3;
+var WAIT_TIME_TO_RETRY_CONNECTION  = 15000; // in milliseconds
 
 // helpers
 function currentMillisecond() {
@@ -291,6 +293,29 @@ function failedBecauseNoDevice(output) {
     return NO_DEVICE_PATTERN.test(output);
 }
 
+function tryConnect(couchdbURI, pendingNumberOfTries, callback) {
+    util.medicLog("checking if " + couchdbURI + " is up.");
+
+    // check if results server is up
+    request({
+        uri:     couchdbURI,
+        method:  "GET",
+        timeout: SERVER_RESPONSE_TIMEOUT
+    }).on('response', function (response){
+        callback();
+    }).on('error', function (error){
+        if(pendingNumberOfTries > 1) {
+            util.medicLog("it's not up. Going to retry after " + WAIT_TIME_TO_RETRY_CONNECTION + " milliseconds");
+            setTimeout(function (){
+                tryConnect(couchdbURI, pendingNumberOfTries-1 , callback);
+            }, WAIT_TIME_TO_RETRY_CONNECTION);
+        } else {
+            util.fatal("it's not up even after " + MAX_NUMBER_OF_TRIES + " attempts to connect, so test run can't be monitored");
+            process.exit(1);
+        }
+    });
+}
+
 // main
 function main() {
 
@@ -324,23 +349,8 @@ function main() {
         util.fatal("app " + appPath + " does not exist");
     }
 
-    util.medicLog("checking if " + couchdbURI + " is up");
-
-    // check if results server is up
-    request({
-        uri:     couchdbURI,
-        method:  "GET",
-        timeout: SERVER_RESPONSE_TIMEOUT
-    },
-    function (error, response, body) {
-
-        // bail if the results server is down
-        if (error || response.statusCode !== 200) {
-            util.fatal("it's not up, so test run can't be monitored");
-            process.exit(1);
-        } else {
-            util.medicLog("it's up");
-        }
+    tryConnect(couchdbURI, MAX_NUMBER_OF_TRIES, function (){
+        util.medicLog("it's up");        
 
         // modify the app to run autonomously
         createMedicJson(appPath, buildId, couchdbURI);
@@ -414,8 +424,7 @@ function main() {
                 }
             }
         });
-
-    }); // request(couchdbURI)
+    });
 }
 
 main();
