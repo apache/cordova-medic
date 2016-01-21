@@ -44,7 +44,9 @@ var MEDIC_BUILD_PREFIX        = "medic-cli-build";
 var DEFAULT_WINDOWS_VERSION   = "store";
 var WINDOWS_VERSION_CHOICES   = ["store", "store80", "phone"];
 var DEFAULT_TIMEOUT           = 600; // in seconds
-var SERVER_RESPONSE_TIMEOUT   = 3000; // in milliseconds
+var SERVER_RESPONSE_TIMEOUT   = 15000; // in milliseconds
+var MAX_NUMBER_OF_TRIES       = 3;
+var WAIT_TIME_FOR_CORDOVA_VM  = 15000; // in milliseconds
 
 // helpers
 function currentMillisecond() {
@@ -291,56 +293,16 @@ function failedBecauseNoDevice(output) {
     return NO_DEVICE_PATTERN.test(output);
 }
 
-// main
-function main() {
-
-    // shell config
-    shelljs.config.fatal  = false;
-    shelljs.config.silent = false;
-
-    // get args
-    var argv = optimist
-        .usage("Usage: $0 {options}")
-        .demand("platform")
-        .demand("couchdb")
-        .default("entry", DEFAULT_APP_ENTRY)
-        .default("id", generateBuildID())
-        .default("app", DEFAULT_APP_PATH)
-        .default("timeout", DEFAULT_TIMEOUT).describe("timeout", "timeout in seconds")
-        .default("winvers", DEFAULT_WINDOWS_VERSION).describe("winvers", "[" + WINDOWS_VERSION_CHOICES.join("|") + "]")
-        .argv;
-
-    var platform   = argv.platform;
-    var buildId    = argv.id;
-    var appPath    = argv.app;
-    var couchdbURI = argv.couchdb;
-    var entryPoint = argv.entry;
-    var timeout    = argv.timeout;
-
-    var cli = getLocalCLI();
-
-    // check that the app exists
-    if (!fs.existsSync(appPath)) {
-        util.fatal("app " + appPath + " does not exist");
-    }
-
-    util.medicLog("checking if " + couchdbURI + " is up");
+function processRequest(platform, buildId, appPath, couchdbURI, entryPoint, timeout, cli, retryCount) {
+    util.medicLog("checking if " + couchdbURI + " is up. Check count: " + retryCount);
 
     // check if results server is up
     request({
         uri:     couchdbURI,
         method:  "GET",
         timeout: SERVER_RESPONSE_TIMEOUT
-    },
-    function (error, response, body) {
-
-        // bail if the results server is down
-        if (error || response.statusCode !== 200) {
-            util.fatal("it's not up, so test run can't be monitored");
-            process.exit(1);
-        } else {
-            util.medicLog("it's up");
-        }
+    }).on('response', function(response){
+        util.medicLog("it's up");
 
         // modify the app to run autonomously
         createMedicJson(appPath, buildId, couchdbURI);
@@ -414,8 +376,53 @@ function main() {
                 }
             }
         });
+    }).on('error', function(error){
+        if(retryCount < MAX_NUMBER_OF_TRIES) {
+            util.medicLog("it's not up. Going to retry after " + WAIT_TIME_FOR_CORDOVA_VM + " milliseconds");          
+            setTimeout(function(){
+                processRequest(platform, buildId, appPath, couchdbURI, entryPoint, timeout, cli, retryCount+1);
+            }, WAIT_TIME_FOR_CORDOVA_VM);            
+        } else {
+            util.fatal("it's not up even after " + MAX_NUMBER_OF_TRIES + " attempts to connect, so test run can't be monitored");
+            process.exit(1);
+        }
+    });
+}
 
-    }); // request(couchdbURI)
+// main
+function main() {
+
+    // shell config
+    shelljs.config.fatal  = false;
+    shelljs.config.silent = false;
+
+    // get args
+    var argv = optimist
+        .usage("Usage: $0 {options}")
+        .demand("platform")
+        .demand("couchdb")
+        .default("entry", DEFAULT_APP_ENTRY)
+        .default("id", generateBuildID())
+        .default("app", DEFAULT_APP_PATH)
+        .default("timeout", DEFAULT_TIMEOUT).describe("timeout", "timeout in seconds")
+        .default("winvers", DEFAULT_WINDOWS_VERSION).describe("winvers", "[" + WINDOWS_VERSION_CHOICES.join("|") + "]")
+        .argv;
+
+    var platform   = argv.platform;
+    var buildId    = argv.id;
+    var appPath    = argv.app;
+    var couchdbURI = argv.couchdb;
+    var entryPoint = argv.entry;
+    var timeout    = argv.timeout;
+
+    var cli = getLocalCLI();
+
+    // check that the app exists
+    if (!fs.existsSync(appPath)) {
+        util.fatal("app " + appPath + " does not exist");
+    }
+
+    processRequest(platform, buildId, appPath, couchdbURI, entryPoint, timeout, cli, 1);
 }
 
 main();
