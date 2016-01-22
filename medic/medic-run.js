@@ -46,7 +46,7 @@ var WINDOWS_VERSION_CHOICES   = ["store", "store80", "phone"];
 var DEFAULT_TIMEOUT           = 600; // in seconds
 var SERVER_RESPONSE_TIMEOUT   = 15000; // in milliseconds
 var MAX_NUMBER_OF_TRIES       = 3;
-var WAIT_TIME_FOR_CORDOVA_VM  = 15000; // in milliseconds
+var WAIT_TIME_TO_RETRY_CONNECTION  = 15000; // in milliseconds
 
 // helpers
 function currentMillisecond() {
@@ -305,10 +305,10 @@ function tryConnect(couchdbURI, pendingNumberOfTries, callback) {
         callback();
     }).on('error', function (error){
         if(pendingNumberOfTries > 1) {
-            util.medicLog("it's not up. Going to retry after " + WAIT_TIME_FOR_CORDOVA_VM + " milliseconds");
+            util.medicLog("it's not up. Going to retry after " + WAIT_TIME_TO_RETRY_CONNECTION + " milliseconds");
             setTimeout(function (){
                 tryConnect(couchdbURI, pendingNumberOfTries-1 , callback);
-            }, WAIT_TIME_FOR_CORDOVA_VM);
+            }, WAIT_TIME_TO_RETRY_CONNECTION);
         } else {
             util.fatal("it's not up even after " + MAX_NUMBER_OF_TRIES + " attempts to connect, so test run can't be monitored");
             process.exit(1);
