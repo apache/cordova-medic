@@ -293,7 +293,7 @@ function failedBecauseNoDevice(output) {
     return NO_DEVICE_PATTERN.test(output);
 }
 
-function processRequest(platform, buildId, appPath, couchdbURI, entryPoint, timeout, cli, retryCount) {
+function onConnect(couchdbURI, retryCount, callback) {
     util.medicLog("checking if " + couchdbURI + " is up. Check count: " + retryCount);
 
     // check if results server is up
@@ -302,7 +302,55 @@ function processRequest(platform, buildId, appPath, couchdbURI, entryPoint, time
         method:  "GET",
         timeout: SERVER_RESPONSE_TIMEOUT
     }).on('response', function(response){
-        util.medicLog("it's up");
+        callback();
+    }).on('error', function(error){
+        if(retryCount < MAX_NUMBER_OF_TRIES) {
+            util.medicLog("it's not up. Going to retry after " + WAIT_TIME_FOR_CORDOVA_VM + " milliseconds");
+            setTimeout(function(){
+                onConnect(couchdbURI, retryCount+1, callback);
+            }, WAIT_TIME_FOR_CORDOVA_VM);
+        } else {
+            util.fatal("it's not up even after " + MAX_NUMBER_OF_TRIES + " attempts to connect, so test run can't be monitored");
+            process.exit(1);
+        }
+    });
+}
+
+// main
+function main() {
+
+    // shell config
+    shelljs.config.fatal  = false;
+    shelljs.config.silent = false;
+
+    // get args
+    var argv = optimist
+        .usage("Usage: $0 {options}")
+        .demand("platform")
+        .demand("couchdb")
+        .default("entry", DEFAULT_APP_ENTRY)
+        .default("id", generateBuildID())
+        .default("app", DEFAULT_APP_PATH)
+        .default("timeout", DEFAULT_TIMEOUT).describe("timeout", "timeout in seconds")
+        .default("winvers", DEFAULT_WINDOWS_VERSION).describe("winvers", "[" + WINDOWS_VERSION_CHOICES.join("|") + "]")
+        .argv;
+
+    var platform   = argv.platform;
+    var buildId    = argv.id;
+    var appPath    = argv.app;
+    var couchdbURI = argv.couchdb;
+    var entryPoint = argv.entry;
+    var timeout    = argv.timeout;
+
+    var cli = getLocalCLI();
+
+    // check that the app exists
+    if (!fs.existsSync(appPath)) {
+        util.fatal("app " + appPath + " does not exist");
+    }
+
+    onConnect(couchdbURI, 1, function(){
+        util.medicLog("it's up");        
 
         // modify the app to run autonomously
         createMedicJson(appPath, buildId, couchdbURI);
@@ -376,53 +424,7 @@ function processRequest(platform, buildId, appPath, couchdbURI, entryPoint, time
                 }
             }
         });
-    }).on('error', function(error){
-        if(retryCount < MAX_NUMBER_OF_TRIES) {
-            util.medicLog("it's not up. Going to retry after " + WAIT_TIME_FOR_CORDOVA_VM + " milliseconds");          
-            setTimeout(function(){
-                processRequest(platform, buildId, appPath, couchdbURI, entryPoint, timeout, cli, retryCount+1);
-            }, WAIT_TIME_FOR_CORDOVA_VM);            
-        } else {
-            util.fatal("it's not up even after " + MAX_NUMBER_OF_TRIES + " attempts to connect, so test run can't be monitored");
-            process.exit(1);
-        }
     });
-}
-
-// main
-function main() {
-
-    // shell config
-    shelljs.config.fatal  = false;
-    shelljs.config.silent = false;
-
-    // get args
-    var argv = optimist
-        .usage("Usage: $0 {options}")
-        .demand("platform")
-        .demand("couchdb")
-        .default("entry", DEFAULT_APP_ENTRY)
-        .default("id", generateBuildID())
-        .default("app", DEFAULT_APP_PATH)
-        .default("timeout", DEFAULT_TIMEOUT).describe("timeout", "timeout in seconds")
-        .default("winvers", DEFAULT_WINDOWS_VERSION).describe("winvers", "[" + WINDOWS_VERSION_CHOICES.join("|") + "]")
-        .argv;
-
-    var platform   = argv.platform;
-    var buildId    = argv.id;
-    var appPath    = argv.app;
-    var couchdbURI = argv.couchdb;
-    var entryPoint = argv.entry;
-    var timeout    = argv.timeout;
-
-    var cli = getLocalCLI();
-
-    // check that the app exists
-    if (!fs.existsSync(appPath)) {
-        util.fatal("app " + appPath + " does not exist");
-    }
-
-    processRequest(platform, buildId, appPath, couchdbURI, entryPoint, timeout, cli, 1);
 }
 
 main();
