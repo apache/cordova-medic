@@ -293,21 +293,21 @@ function failedBecauseNoDevice(output) {
     return NO_DEVICE_PATTERN.test(output);
 }
 
-function onConnect(couchdbURI, retryCount, callback) {
-    util.medicLog("checking if " + couchdbURI + " is up. Check count: " + retryCount);
+function tryConnect(couchdbURI, pendingNumberOfTries, callback) {
+    util.medicLog("checking if " + couchdbURI + " is up.");
 
     // check if results server is up
     request({
         uri:     couchdbURI,
         method:  "GET",
         timeout: SERVER_RESPONSE_TIMEOUT
-    }).on('response', function(response){
+    }).on('response', function (response){
         callback();
-    }).on('error', function(error){
-        if(retryCount < MAX_NUMBER_OF_TRIES) {
+    }).on('error', function (error){
+        if(pendingNumberOfTries > 1) {
             util.medicLog("it's not up. Going to retry after " + WAIT_TIME_FOR_CORDOVA_VM + " milliseconds");
-            setTimeout(function(){
-                onConnect(couchdbURI, retryCount+1, callback);
+            setTimeout(function (){
+                tryConnect(couchdbURI, pendingNumberOfTries-1 , callback);
             }, WAIT_TIME_FOR_CORDOVA_VM);
         } else {
             util.fatal("it's not up even after " + MAX_NUMBER_OF_TRIES + " attempts to connect, so test run can't be monitored");
@@ -349,7 +349,7 @@ function main() {
         util.fatal("app " + appPath + " does not exist");
     }
 
-    onConnect(couchdbURI, 1, function(){
+    tryConnect(couchdbURI, MAX_NUMBER_OF_TRIES, function (){
         util.medicLog("it's up");        
 
         // modify the app to run autonomously
