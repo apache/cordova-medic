@@ -70,15 +70,66 @@ function logBlackberry() {
 }
 
 function logIOS() {
-    var logScriptpath = path.join("mobilespec", "platforms", "ios", "cordova", "console.log");
-    var command = "cat " + logScriptpath;
+    // We need to print out the system log for the simulator app. In order to figure
+    // out the path to that file, we need to find the ID of the simulator running
+    // mobilespec
+
+    // First, figure out the simulator that ran mobilespec. "cordova run"" just chooses
+    // the last simulator in this list that starts with the word "iPhone"
+    var findSimCommand = "cordova run --list --emulator | grep ^iPhone | tail -n1";
 
     util.medicLog("running:");
-    util.medicLog("    " + command);
+    util.medicLog("    " + findSimCommand);
 
-    shelljs.exec(command, function (code, output) {
+    shelljs.exec(findSimCommand, function (code, output) {
         if (code > 0) {
-            util.fatal("Failed to run log command.");
+            util.fatal("Failed to find simulator we deployed to");
+        } else {
+            var split = output.split(", ");
+
+            // Format of the output is "iPhone-6s-Plus, 9.1"
+            // Extract the device name and the version number
+            var device = split[0].replace(/-/g, " ").trim();
+            var version = split[1].trim();
+
+            // Next, figure out the ID of the simulator we found
+            var instrCommand = "instruments -s devices";
+            util.medicLog("running:");
+            util.medicLog("    " + instrCommand);
+
+            shelljs.exec(instrCommand, function (instrCode, instrOutput) {
+                if (instrCode > 0) {
+                    util.fatal("Failed to get the list of simulators");
+                } else {
+                    // This matches <device> (<version>) [<simulator-id>]
+                    var simIdRegex = /^([a-zA-Z\d ]+) \(([\d.]+)\) \[([a-zA-Z\d\-]*)\]$/;
+
+                    var simId = null;
+                    var lines = instrOutput.split(/\n/);
+                    lines.forEach(function(line) {
+                        var simIdMatch = simIdRegex.exec(line);
+                        if (simIdMatch && simIdMatch.length === 4 && simIdMatch[1] === device && simIdMatch[2] === version) {
+                            simId = encodeURIComponent(simIdMatch[3]);
+                        }
+                    });
+
+                    if (simId) {
+                        // Now we can print out the log file
+                        var logPath = path.join("~", "Library", "Logs", "CoreSimulator", simId, "system.log");
+                        var logCommand = "cat " + logPath;
+
+                        util.medicLog("Attempting to print the iOS simulator system log");
+
+                        shelljs.exec(logCommand, function(logCode, logOutput) {
+                            if (logCode > 0) {
+                                util.fatal("Failed to cat the simulator log");
+                            }
+                        });
+                    } else {
+                        util.fatal("Failed to find ID of mobilespec simulator");
+                    }
+                }
+            });
         }
     });
 }
