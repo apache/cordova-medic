@@ -27,6 +27,8 @@ var optimist = require("optimist");
 
 var util      = require("../lib/util");
 var testcheck = require("../lib/testcheck");
+var MAX_NUMBER_OF_TRIES = 3;
+var WAIT_TIME_TO_RETRY_CONNECTION  = 15000; // in milliseconds
 
 // constants
 var INDENT = "    ";
@@ -49,7 +51,7 @@ function main() {
 
     console.log("Getting test results for " + buildId);
 
-    testcheck(buildId, couchdbURI).done(
+    testcheck(buildId, couchdbURI, MAX_NUMBER_OF_TRIES, WAIT_TIME_TO_RETRY_CONNECTION).done(
         function onFulfilled(testResults) {
 
             var numFailures = testResults.mobilespec.failures;
