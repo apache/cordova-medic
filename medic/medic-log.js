@@ -76,7 +76,7 @@ function logIOS() {
 
     // First, figure out the simulator that ran mobilespec. "cordova run"" just chooses
     // the last simulator in this list that starts with the word "iPhone"
-    var findSimCommand = "cordova run --list --emulator | grep ^iPhone | tail -n1";
+    var findSimCommand = getLocalCLI() + " run --list --emulator | grep ^iPhone | tail -n1";
 
     util.medicLog("running:");
     util.medicLog("    " + findSimCommand);
@@ -151,6 +151,14 @@ function logWindows(timeout) {
 
 function logWP8() {
     return;
+}
+
+function getLocalCLI() {
+    if (util.isWindows()) {
+        return "cordova.bat";
+    } else {
+        return "./cordova";
+    }
 }
 
 // main
