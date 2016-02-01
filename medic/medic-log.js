@@ -81,57 +81,58 @@ function logIOS() {
     util.medicLog("running:");
     util.medicLog("    " + findSimCommand);
 
-    shelljs.exec(findSimCommand, function (code, output) {
-        if (code > 0) {
-            util.fatal("Failed to find simulator we deployed to");
-        } else {
-            var split = output.split(", ");
+    var findSimResult = shelljs.exec(findSimCommand);
 
-            // Format of the output is "iPhone-6s-Plus, 9.1"
-            // Extract the device name and the version number
-            var device = split[0].replace(/-/g, " ").trim();
-            var version = split[1].trim();
+    if (findSimResult.code > 0) {
+        util.fatal("Failed to find simulator we deployed to");
+        return;
+    }
 
-            // Next, figure out the ID of the simulator we found
-            var instrCommand = "instruments -s devices";
-            util.medicLog("running:");
-            util.medicLog("    " + instrCommand);
+    var split = findSimResult.output.split(", ");
 
-            shelljs.exec(instrCommand, function (instrCode, instrOutput) {
-                if (instrCode > 0) {
-                    util.fatal("Failed to get the list of simulators");
-                } else {
-                    // This matches <device> (<version>) [<simulator-id>]
-                    var simIdRegex = /^([a-zA-Z\d ]+) \(([\d.]+)\) \[([a-zA-Z\d\-]*)\]$/;
+    // Format of the output is "iPhone-6s-Plus, 9.1"
+    // Extract the device name and the version number
+    var device = split[0].replace(/-/g, " ").trim();
+    var version = split[1].trim();
 
-                    var simId = null;
-                    var lines = instrOutput.split(/\n/);
-                    lines.forEach(function(line) {
-                        var simIdMatch = simIdRegex.exec(line);
-                        if (simIdMatch && simIdMatch.length === 4 && simIdMatch[1] === device && simIdMatch[2] === version) {
-                            simId = encodeURIComponent(simIdMatch[3]);
-                        }
-                    });
+    // Next, figure out the ID of the simulator we found
+    var instrCommand = "instruments -s devices | grep ^iPhone";
+    util.medicLog("running:");
+    util.medicLog("    " + instrCommand);
 
-                    if (simId) {
-                        // Now we can print out the log file
-                        var logPath = path.join("~", "Library", "Logs", "CoreSimulator", simId, "system.log");
-                        var logCommand = "cat " + logPath;
+    var instrResult = shelljs.exec(instrCommand);
 
-                        util.medicLog("Attempting to print the iOS simulator system log");
+    if (instrResult.code > 0) {
+        util.fatal("Failed to get the list of simulators");
+        return;
+    }
 
-                        shelljs.exec(logCommand, function(logCode, logOutput) {
-                            if (logCode > 0) {
-                                util.fatal("Failed to cat the simulator log");
-                            }
-                        });
-                    } else {
-                        util.fatal("Failed to find ID of mobilespec simulator");
-                    }
-                }
-            });
+    // This matches <device> (<version>) [<simulator-id>]
+    var simIdRegex = /^([a-zA-Z\d ]+) \(([\d.]+)\) \[([a-zA-Z\d\-]*)\]$/;
+
+    var simId = null;
+    var lines = instrResult.output.split(/\n/);
+    lines.forEach(function(line) {
+        var simIdMatch = simIdRegex.exec(line);
+        if (simIdMatch && simIdMatch.length === 4 && simIdMatch[1] === device && simIdMatch[2] === version) {
+            simId = encodeURIComponent(simIdMatch[3]);
         }
     });
+
+    if (simId) {
+        // Now we can print out the log file
+        var logPath = path.join("~", "Library", "Logs", "CoreSimulator", simId, "system.log");
+        var logCommand = "cat " + logPath;
+
+        util.medicLog("Attempting to print the iOS simulator system log");
+
+        var logResult = shelljs.exec(logCommand);
+        if (logResult.code > 0) {
+            util.fatal("Failed to cat the simulator log");
+        }
+    } else {
+        util.fatal("Failed to find ID of mobilespec simulator");
+    }
 }
 
 function logWindows(timeout) {
