@@ -33,6 +33,7 @@ var util = require("../lib/util");
 // constants
 var DEVICE_ROW_PATTERN = /(emulator|device|host)/m;
 var HEADING_LINE_PATTERN = /List of devices/m;
+var DEFAULT_APP_PATH = "mobilespec";
 
 // helpers
 function logAndroid() {
@@ -69,13 +70,15 @@ function logBlackberry() {
     return;
 }
 
-function logIOS() {
+function logIOS(appPath) {
     // We need to print out the system log for the simulator app. In order to figure
     // out the path to that file, we need to find the ID of the simulator running
     // mobilespec
 
     // First, figure out the simulator that ran mobilespec. "cordova run"" just chooses
     // the last simulator in this list that starts with the word "iPhone"
+    shelljs.pushd(appPath);
+
     var findSimCommand = getLocalCLI() + " run --list --emulator | grep ^iPhone | tail -n1";
 
     util.medicLog("running:");
@@ -173,12 +176,15 @@ function main() {
     var argv = optimist
         .usage("Usage: $0 [options]")
         .demand("platform")
+        .default("app", DEFAULT_APP_PATH)
         .describe("platform", "Gather logs for this platform.")
+        .describe("app", "iOS only, path to a Cordova Application.")
         .describe("timeout", "Windows only, gather logs for last n seconds.")
         .argv;
 
     var platform = argv.platform;
     var timeout = argv.timeout;
+    var appPath = argv.app ? argv.app : DEFAULT_APP_PATH;
 
     switch (platform) {
         case util.ANDROID:
@@ -188,7 +194,7 @@ function main() {
             logBlackberry();
             break;
         case util.IOS:
-            logIOS();
+            logIOS(appPath);
             break;
         case util.WINDOWS:
             logWindows(timeout);
