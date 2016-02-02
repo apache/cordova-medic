@@ -9,6 +9,13 @@
         "entry":   "cdvtests/index.html",
         "timeout": 600
     },
+    "appium": {
+      "androidDeviceName": "api21",
+      "androidPlatformVersion": "21",
+      "iosDeviceName": "iPad 2",
+      "iosPlatformVersion": "8.1",
+      "timeout": 2400
+    },
     "blackberry": {
         "devices": {
             "ips":      [],

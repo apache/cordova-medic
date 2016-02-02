@@ -20,6 +20,7 @@
  */
 
 /* jshint node: true */
+/*jslint node: true*/
 
 "use strict";
 
@@ -35,6 +36,7 @@ function main() {
         .command("run",      "run a cordova app in automated mode")
         .command("check",    "analyze test runs from a medic DB")
         .command("log",      "output platform-specific logs to console")
+        .command("appium",   "run Appium tests")
         .parse(process.argv);
 }
 
