@@ -123,6 +123,12 @@ On Windows 8 and Windows 8.1:
 
 No further steps are necessary to make a slave obey a Medic master. However, every slave needs to be configured appropriately for its platform. For platform-specific details on slave configuration, see [SLAVES.md](SLAVES.md).
 
+# Testing
+
+To test a Buildbot master config, run the following command in the directory that contains is `master.cfg`:
+
+    buildbot checkconfig
+
 # Running
 
 To start the master, run:
@@ -165,6 +171,34 @@ In general, when any of the files in the master directory are changed, a restart
 
 **github.passwd**: File containing one line: a username and password for authenticating GitHub hooks. *Only a sample of this file is provided in the repo, with a `.sample` extension.*
 
+# Deployment
+
+The [Buildbot master][apache_master] is configured directly from the Apache Infrastructure [SVN repository][infra_svn]. Changes from `cordova-medic` are submitted to the Buildbot master by copying config files from `buildbot-conf` into the Buildbot master's config directory. Only Apache Committers have access to this config. Remember, **before submitting any changes, verify that the new config works** by [testing it](#testing).
+
+To get the config of the Buildbot master, check out the SVN repository:
+
+    svn checkout https://svn.apache.org/repos/infra/infrastructure/buildbot/aegis/buildmaster/master1/
+
+This will create a folder called `master1` that contains the master's config files. To apply changes, copy the Cordova-specific config files from `cordova-medic/buildbot-conf` into the SVN repo:
+
+    cp cordova-medic/buildbot-conf/cordova-config.json master1/projects/cordova-config.json
+    cp cordova-medic/buildbot-conf/cordova-repos.json master1/projects/cordova-repos.json
+    cp cordova-medic/buildbot-conf/cordova.conf master1/projects/cordova.conf
+
+To check the changes that were made, go into `master1` and run:
+
+    svn diff
+
+To undo changes, run (also in `master1`):
+
+    svn revert -R ./*
+
+**WARNING**: it may be necessary to *manually undo some changes* because `cordova.conf` in `buildbot-config` and `cordova.conf` in the SVN repo have slightly different settings (indeed, this is something that can be improved by, for example, making the file in `buildbot-conf` match the one in the SVN repo; please feel free to correct this and then remove this warning.).
+
+Finally, commit the changes:
+
+    svn commit -m "[message about the changes]"
+
 [couchdb]:          http://couchdb.apache.org/
 [python]:           https://www.python.org/downloads/
 [pywin32]:          http://sourceforge.net/projects/pywin32/files/
@@ -176,3 +210,5 @@ In general, when any of the files in the master directory are changed, a restart
 [node]:             http://nodejs.org/download/
 [buildbot_windows]: http://trac.buildbot.net/wiki/RunningBuildbotOnWindows
 [reconfig]:         http://docs.buildbot.net/0.8.10/manual/cfg-intro.html#reloading-the-config-file-reconfig
+[apache_master]:    http://ci.apache.org/waterfall?category=cordova
+[infra_svn]:        https://svn.apache.org/repos/infra/infrastructure/buildbot/aegis/buildmaster/master1/
