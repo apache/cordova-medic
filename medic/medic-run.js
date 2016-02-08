@@ -42,7 +42,7 @@ var DEFAULT_APP_ENTRY         = "index.html";
 var ANDROID_PAGE_LOAD_TIMEOUT = 120000; // in milliseconds
 var MEDIC_BUILD_PREFIX        = "medic-cli-build";
 var DEFAULT_WINDOWS_VERSION   = "store";
-var WINDOWS_VERSION_CHOICES   = ["store", "store80", "phone"];
+var WINDOWS_VERSION_CHOICES   = ["store", "phone"];
 var DEFAULT_TIMEOUT           = 600; // in seconds
 var SERVER_RESPONSE_TIMEOUT   = 15000; // in milliseconds
 var MAX_NUMBER_OF_TRIES       = 3;
@@ -204,11 +204,7 @@ function windowsSpecificPreparation(argv) {
     }
 
     // set windows target store version
-    if (winVersion === "store80") {
-        setWindowsTargetStoreVersion(appPath, "8.0");
-        extraArgs = "--win";
-
-    } else if (winVersion === "store") {
+    if (winVersion === "store") {
         setWindowsTargetStoreVersion(appPath, "8.1");
         extraArgs = "--win";
 
@@ -218,7 +214,7 @@ function windowsSpecificPreparation(argv) {
     }
 
     // patch WindowsStoreAppUtils script to allow app run w/out active desktop/remote session
-    if (winVersion === "store80" || winVersion === "store") {
+    if (winVersion === "store") {
 
         util.medicLog("Patching WindowsStoreAppUtils to allow app to be run in automated mode");
 
@@ -243,34 +239,6 @@ function windowsSpecificPreparation(argv) {
         );
     }
 
-    return extraArgs;
-}
-
-function wp8SpecificPreparation(argv) {
-
-    var appPath = argv.app;
-
-    // set permanent guid to prevent multiple installations
-    var guid         = "{8449DEEE-16EB-4A4A-AFCC-8446E8F06FF7}";
-    var manifestPath = path.join(appPath, "platforms", "wp8", "Properties", "WMAppManifest.xml");
-    var xml          = fs.readFileSync(manifestPath).toString().split("\n");
-
-    for (var i in xml) if (xml[i].indexOf("<App") != -1) {
-        if (xml[i].toLowerCase().indexOf("productid") != -1) {
-            var index = xml[i].toLowerCase().indexOf("productid");
-            var spaceIndex = xml[i].indexOf(" ", index);
-            var stringAsArray = xml[i].split("");
-            stringAsArray.splice(index, spaceIndex - index);
-            xml[i] = stringAsArray.join("");
-        }
-        xml[i] = xml[i].substr(0, xml[i].length - 1);
-        xml[i] += " ProductID=\"" + guid + "\">";
-        break;
-    }
-
-    fs.writeFileSync(manifestPath, xml.join("\n"));
-
-    var extraArgs = "";
     return extraArgs;
 }
 
@@ -363,8 +331,6 @@ function main() {
             platformArgs = androidSpecificPreparation(argv);
         } else if (platform === util.WINDOWS) {
             platformArgs = windowsSpecificPreparation(argv);
-        } else if (platform === util.WP8) {
-            platformArgs = wp8SpecificPreparation(argv);
         }
 
         // start waiting for test results
