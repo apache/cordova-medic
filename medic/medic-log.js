@@ -153,10 +153,6 @@ function logWindows(timeout) {
     }
 }
 
-function logWP8() {
-    return;
-}
-
 function getLocalCLI() {
     if (util.isWindows()) {
         return "cordova.bat";
@@ -198,9 +194,6 @@ function main() {
             break;
         case util.WINDOWS:
             logWindows(timeout);
-            break;
-        case util.WP8:
-            logWP8();
             break;
         default:
             console.warn("Logging is unsupported for " + platform);

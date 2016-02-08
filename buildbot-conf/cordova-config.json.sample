@@ -27,9 +27,6 @@
         "keychainPassword": "",
         "keychainLocation": ""
     },
-    "wp8": {
-        "target": "emulator"
-    },
     "windows8": {
         "target": "emulator"
     },

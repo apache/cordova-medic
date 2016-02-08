@@ -81,14 +81,6 @@
             "github": "https://github.com/apache/cordova-ios.git"
         }
     },
-    "cordova-wp8": {
-        "default_repository": "github",
-        "default_branch":     "master",
-        "repositories":       {
-            "asf":    "https://git-wip-us.apache.org/repos/asf/cordova-wp8.git",
-            "github": "https://github.com/apache/cordova-wp8.git"
-        }
-    },
     "cordova-windows": {
         "default_repository": "github",
         "default_branch":     "master",

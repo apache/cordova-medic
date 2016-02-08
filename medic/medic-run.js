@@ -246,34 +246,6 @@ function windowsSpecificPreparation(argv) {
     return extraArgs;
 }
 
-function wp8SpecificPreparation(argv) {
-
-    var appPath = argv.app;
-
-    // set permanent guid to prevent multiple installations
-    var guid         = "{8449DEEE-16EB-4A4A-AFCC-8446E8F06FF7}";
-    var manifestPath = path.join(appPath, "platforms", "wp8", "Properties", "WMAppManifest.xml");
-    var xml          = fs.readFileSync(manifestPath).toString().split("\n");
-
-    for (var i in xml) if (xml[i].indexOf("<App") != -1) {
-        if (xml[i].toLowerCase().indexOf("productid") != -1) {
-            var index = xml[i].toLowerCase().indexOf("productid");
-            var spaceIndex = xml[i].indexOf(" ", index);
-            var stringAsArray = xml[i].split("");
-            stringAsArray.splice(index, spaceIndex - index);
-            xml[i] = stringAsArray.join("");
-        }
-        xml[i] = xml[i].substr(0, xml[i].length - 1);
-        xml[i] += " ProductID=\"" + guid + "\">";
-        break;
-    }
-
-    fs.writeFileSync(manifestPath, xml.join("\n"));
-
-    var extraArgs = "";
-    return extraArgs;
-}
-
 function getLocalCLI() {
     if (util.isWindows()) {
         return "cordova.bat";
@@ -363,8 +335,6 @@ function main() {
             platformArgs = androidSpecificPreparation(argv);
         } else if (platform === util.WINDOWS) {
             platformArgs = windowsSpecificPreparation(argv);
-        } else if (platform === util.WP8) {
-            platformArgs = wp8SpecificPreparation(argv);
         }
 
         // start waiting for test results

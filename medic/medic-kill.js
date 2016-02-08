@@ -33,8 +33,6 @@ function tasksOnPlatform(platformName) {
     switch (platformName) {
         case util.WINDOWS:
             return ["WWAHost.exe", "Xde.exe"];
-        case util.WP8:
-            return ["Xde.exe"];
         case util.IOS:
             return ["iOS Simulator"];
         case util.ANDROID:
