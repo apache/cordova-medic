@@ -350,7 +350,7 @@ function main() {
     }
 
     tryConnect(couchdbURI, MAX_NUMBER_OF_TRIES, function (){
-        util.medicLog("it's up");        
+        util.medicLog("it's up");
 
         // modify the app to run autonomously
         createMedicJson(appPath, buildId, couchdbURI);
@@ -372,13 +372,13 @@ function main() {
         //      timeout needs to be in milliseconds, but it's
         //      given in seconds, so we multiply by 1000
         testwait.init(couchdbURI);
-        testwait.waitTestsCompleted(buildId, timeout * 1000).then(
+        testwait.waitTestsCompleted(buildId, timeout * 1000, false).then(
             function onFulfilled(value) {
-                util.medicLog("got test results");
+                util.medicLog("Successfully found test results");
                 process.exit(0);
             },
             function onRejected(error) {
-                console.error("didn't get test results: " + error);
+                console.error("Could not find test results: " + error);
                 process.exit(1);
             }
         );
