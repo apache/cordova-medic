@@ -378,7 +378,7 @@ function main() {
                 process.exit(0);
             },
             function onRejected(error) {
-                console.error("Could not find test results: " + error);
+                console.error("Could not find test results. Check the output of medic-log to see if the app crashed before it could upload them to couchdb.");
                 process.exit(1);
             }
         );
