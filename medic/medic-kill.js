@@ -37,9 +37,9 @@ function tasksOnPlatform(platformName) {
             return ["iOS Simulator"];
         case util.ANDROID:
             if (util.isWindows()) {
-                return ["emulator-arm.exe", "adb.exe"];
+                return ["emulator-arm.exe"];
             } else {
-                return ["emulator64-x86", "emulator64-arm", "adb"];
+                return ["emulator64-x86", "emulator64-arm"];
             }
             break;
         case util.BLACKBERRY:
@@ -83,20 +83,10 @@ function killTasks(taskNames) {
     });
 }
 
-// main
-function main() {
-
+function killTasksForPlatform(platform) {
     // shell config
     shelljs.config.fatal  = false;
     shelljs.config.silent = false;
-
-    // get args
-    var argv = optimist
-        .usage("Usage: $0 --platform {platform}")
-        .demand("platform")
-        .argv;
-
-    var platform = argv.platform;
 
     // get platform tasks
     var platformTasks = tasksOnPlatform(platform);
@@ -109,4 +99,20 @@ function main() {
     killTasks(platformTasks);
 }
 
-main();
+// main
+function main() {
+    // get args
+    var argv = optimist
+        .usage("Usage: $0 --platform {platform}")
+        .demand("platform")
+        .argv;
+
+    killTasksForPlatform(argv.platform);
+}
+
+module.exports = killTasksForPlatform;
+
+// This script can be required or run directly
+if (require.main === module) {
+    main();
+}
