@@ -25,6 +25,7 @@
 
 var fs   = require("fs");
 var path = require("path");
+var process = require("process");
 
 var shelljs  = require("shelljs");
 var optimist = require("optimist");
@@ -32,6 +33,8 @@ var request  = require("request");
 
 var util     = require("../lib/util");
 var testwait = require("../lib/testwait");
+
+var medicKill    = require("./medic-kill");
 
 // constants
 var CORDOVA_MEDIC_DIR         = "cordova-medic";
@@ -47,6 +50,8 @@ var DEFAULT_TIMEOUT           = 600; // in seconds
 var SERVER_RESPONSE_TIMEOUT   = 15000; // in milliseconds
 var MAX_NUMBER_OF_TRIES       = 3;
 var WAIT_TIME_TO_RETRY_CONNECTION  = 15000; // in milliseconds
+var ANDROID_EMU_START_MAX_ATTEMPTS = 3;
+var ANDROID_EMU_START_TIMEOUT      = 180000; // in milliseconds (3 minutes)
 
 // helpers
 function currentMillisecond() {
@@ -316,6 +321,73 @@ function tryConnect(couchdbURI, pendingNumberOfTries, callback) {
     });
 }
 
+/*
+ * Attempts to start the Android emulator by calling the emulator.js script in
+ * the Android platform directory of the app. If the emulator fails to boot, we
+ * retry a specified number of times.
+ *
+ * @param {string} appPath          An ABSOLUTE path to the app's project folder
+ * @param {number} numberOfTries    Number of times to attempt to start the emulator
+ *
+ * @returns {promise}   A promise that resolves to the ID of the emulator or
+ *                      null if it failed to start
+ */
+function startAndroidEmulator(appPath, numberOfTries) {
+    // We need to get the emulator script from within the Android platforms folder
+    var emuPath = path.join(appPath, "platforms", "android", "cordova", "lib", "emulator");
+    var emulator = require(emuPath);
+
+    var tryStart = function(numberTriesRemaining) {
+        return emulator.start(null, ANDROID_EMU_START_TIMEOUT)
+        .then(function(emulatorId) {
+            if (emulatorId) {
+                return emulatorId;
+            } else if (numberTriesRemaining > 0) {
+                // Emulator must have hung while booting, so we need to kill it
+                medicKill(util.ANDROID);
+                return tryStart(numberTriesRemaining - 1);
+            } else {
+                return null;
+            }
+        });
+    };
+
+    // Check if the emulator has already been started
+    return emulator.list_started()
+    .then(function(started) {
+        if (started && started.length > 0) {
+            return started[0];
+        } else {
+            return tryStart(numberOfTries);
+        }
+    });
+}
+
+/* Starts periodic polling to check for the mobilespec test results in CouchDB.
+ * After it finishes polling, it will terminate the process returning a 0 if
+ * results were found or 1 if they were not.
+ *
+ * @param {string} couchdbURI   The URL for the couchdb instance
+ * @param {string} buildId      The build ID to query the coudchdb for
+ * @param {number} timeout      The amount of time in seconds to continue polling
+ */
+function startPollingForTestResults(couchdbURI, buildId, timeout) {
+    // NOTE:
+    //      timeout needs to be in milliseconds, but it's
+    //      given in seconds, so we multiply by 1000
+    testwait.init(couchdbURI);
+    testwait.waitTestsCompleted(buildId, timeout * 1000, false).then(
+        function onFulfilled(value) {
+            util.medicLog("Successfully found test results");
+            process.exit(0);
+        },
+        function onRejected(error) {
+            util.fatal("Could not find test results. Check the output of medic-log to see if the app crashed before it could upload them to couchdb.");
+        }
+    );
+    util.medicLog("started waiting for test results");
+}
+
 // main
 function main() {
 
@@ -342,6 +414,8 @@ function main() {
     var entryPoint = argv.entry;
     var timeout    = argv.timeout;
 
+    var workingDir = process.cwd();
+
     var cli = getLocalCLI();
 
     // check that the app exists
@@ -367,23 +441,6 @@ function main() {
             platformArgs = wp8SpecificPreparation(argv);
         }
 
-        // start waiting for test results
-        // NOTE:
-        //      timeout needs to be in milliseconds, but it's
-        //      given in seconds, so we multiply by 1000
-        testwait.init(couchdbURI);
-        testwait.waitTestsCompleted(buildId, timeout * 1000, false).then(
-            function onFulfilled(value) {
-                util.medicLog("Successfully found test results");
-                process.exit(0);
-            },
-            function onRejected(error) {
-                console.error("Could not find test results. Check the output of medic-log to see if the app crashed before it could upload them to couchdb.");
-                process.exit(1);
-            }
-        );
-        util.medicLog("started waiting for test results");
-
         // enter the app directory
         util.medicLog("moving into " + appPath);
         shelljs.pushd(appPath);
@@ -394,8 +451,6 @@ function main() {
         var runCommandDevice   = cli + " run --device " + platform + " -- " + platformArgs;
 
         // build the code
-        // NOTE:
-        //      this is SYNCHRONOUS
         util.medicLog("running:");
         util.medicLog("    " + buildCommand);
         var result = shelljs.exec(buildCommand, {silent: false, async: false});
@@ -404,26 +459,51 @@ function main() {
         }
 
         // run the code
-        // NOTE:
-        //      this is ASYNCHRONOUS
         util.medicLog("running:");
         util.medicLog("    " + runCommandDevice);
-        shelljs.exec(runCommandDevice, {silent: false, async: true}, function (returnCode, output) {
-            if (failedBecauseNoDevice(output)) {
-                util.medicLog("no device found, so switching to emulator");
+        var runDeviceResult = shelljs.exec(runCommandDevice, {silent: false, async: false});
+
+        if (failedBecauseNoDevice(runDeviceResult.output)) {
+            util.medicLog("no device found, so switching to emulator");
+
+            // Because the Android emulator script uses promises, we need to
+            // abstract the run step into a function
+            var runOnEmulator = function() {
                 util.medicLog("running:");
                 util.medicLog("    " + runCommandEmulator);
-                shelljs.exec(runCommandEmulator, {silent: false, async: true}, function (returnCode, output) {
-                    if (cordovaReturnedError(returnCode, output)) {
-                        util.fatal("running on emulator failed");
+
+                var runEmulatorResult = shelljs.exec(runCommandEmulator, {silent: false, async: false});
+                if (cordovaReturnedError(runEmulatorResult.code, runEmulatorResult.output)) {
+                    util.fatal("running on emulator failed");
+                } else {
+                    startPollingForTestResults(couchdbURI, buildId, timeout);
+                }
+            };
+
+            if (platform === util.ANDROID) {
+                // We need to start the emulator first. We can't use "cordova run"
+                // because sometimes the Android emulator hangs on Windows
+                // (CB-10510) and shelljs won't let us timeout
+                util.medicLog("Attempting to start Android emulator");
+                startAndroidEmulator(path.isAbsolute(appPath) ? appPath : path.resolve(workingDir, appPath), ANDROID_EMU_START_MAX_ATTEMPTS)
+                .done(function(emulatorId) {
+                    if (emulatorId) {
+                        // Once the emulator is started, "cordova run" will use
+                        // that emulator and not start another
+                        runOnEmulator();
+                    } else {
+                        util.fatal("Could not start the Android emulator");
                     }
                 });
             } else {
-                if (cordovaReturnedError(returnCode, output)) {
-                    util.fatal("running on device failed");
-                }
+                runOnEmulator();
             }
-        });
+        } else if (cordovaReturnedError(runDeviceResult.code, runDeviceResult.output)) {
+            util.fatal("running on device failed");
+        } else {
+            util.medicLog("Finished waiting for run command");
+            startPollingForTestResults(couchdbURI, buildId, timeout);
+        }
     });
 }
 
