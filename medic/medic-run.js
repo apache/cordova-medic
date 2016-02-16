@@ -25,7 +25,6 @@
 
 var fs   = require("fs");
 var path = require("path");
-var process = require("process");
 
 var shelljs  = require("shelljs");
 var optimist = require("optimist");
@@ -268,7 +267,7 @@ function failedBecauseNoDevice(output) {
 
 function tryConnect(couchdbURI, pendingNumberOfTries, callback) {
     util.medicLog("checking if " + couchdbURI + " is up.");
-       
+
     // check if results server is up
     request({
         uri:     couchdbURI,
@@ -288,7 +287,7 @@ function tryConnect(couchdbURI, pendingNumberOfTries, callback) {
         }
         else {
             callback();
-        }      
+        }
     });
 }
 
