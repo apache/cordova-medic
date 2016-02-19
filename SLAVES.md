@@ -27,6 +27,17 @@ Two special NPM packages are also required for Medic builds on iOS: `ios-sim` an
 
     npm install -g ios-deploy ios-sim
 
+To run Appium tests on real iOS devices you may need to install ios-webkit-debug-proxy. If you don't have Homebrew installed, please install according to the [Homebrew docs][brew].
+
+When you've got Homebrew installed, just run the following commands:
+
+ ``` center
+ > brew update
+ > brew install ios-webkit-debug-proxy
+ ```
+
+More info on installing ios-webkit-debug-proxy can be found in [Appium docs][appium_docs].
+
 ### Android
 
 For Android slaves, the Android SDK is required, and can be installed with Android Studio as described [here][android_full] or without Android Studio as described [here][android_cli]. Alternatively (but only if the slave is running Windows) all tools required for Cordova can be installed in bulk using the the VS [tools for Cordova][vs_cordova].
@@ -37,6 +48,12 @@ To make the Android commands available on the command line, set the following en
 
 - `ANDROID_HOME`, equal to the absolute path to the Android SDK directory
 - `PATH`, extended to contain `ANDROID_HOME/tools` and `ANDROID_HOME/platform_tools`
+
+To run Appium tests, you may also need to download the [latest chromedriver][chromedriver] and set the following environment variable:
+
+- `CHROMEDRIVER_EXECUTABLE`, equal to the absolute path to the chromedriver executable
+
+This is needed to avoid the bug in older chromedriver versions that was preventing Appium tests to switch contexts. There are a bunch of github issues created for this bug in Appium project: [1][appium_bug_1], [2][appium_bug_2], [3][appium_bug_3].
 
 #### SDK
 
@@ -88,3 +105,9 @@ There is an installation of Buildbot running on Apache Infrastructure, which can
 [infra_jira]:   https://www.apache.org/dev/infra-contact
 [infra_svn]:    https://svn.apache.org/repos/infra/infrastructure/buildbot/aegis/buildmaster/master1/
 [ant]:          http://ant.apache.org/manual/install.html
+[appium_bug_1]: https://github.com/appium/appium/issues/4429
+[appium_bug_2]: https://github.com/appium/appium/issues/5526
+[appium_bug_3]: https://github.com/appium/appium/issues/5616
+[chromedriver]: https://sites.google.com/a/chromium.org/chromedriver/downloads
+[appium_docs]:  https://github.com/appium/appium/blob/master/docs/en/advanced-concepts/ios-webkit-debug-proxy.md
+[brew]:         http://brew.sh/
