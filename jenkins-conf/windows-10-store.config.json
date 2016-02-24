@@ -1,0 +1,7 @@
+{
+    "platform": "windows@https://github.com/apache/cordova-windows.git",
+    "action": "run",
+    "args": " -- --appx=uap",
+    "cleanUpAfterRun": true,
+    "logMins": 15
+}
