@@ -7,7 +7,7 @@
     "medic": "./medic/medic.js"
   },
   "dependencies": {
-    "appium": "^1.4.15",
+    "appium": "^1.5.0",
     "commander": "^2.8.1",
     "expect-telnet": "^0.5.2",
     "follow": "^0.11.4",

@@ -10,11 +10,12 @@
         "timeout": 600
     },
     "appium": {
-      "androidDeviceName": "api21",
-      "androidPlatformVersion": "21",
-      "iosDeviceName": "iPad 2",
-      "iosPlatformVersion": "8.1",
-      "timeout": 2400
+        "androidDeviceName":      "Galaxy_Nexus",
+        "androidPlatformVersion": "19",
+        "iosDeviceName":          "iPhone 5",
+        "iosPlatformVersion":     "8.4",
+        "timeout":                2400,
+        "screenshotPath":         "appium_screenshots"
     },
     "blackberry": {
         "devices": {
