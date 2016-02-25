@@ -49,6 +49,24 @@ function tasksOnPlatform(platformName) {
     }
 }
 
+/**
+ * CB-10671: In order to deal with issues where "ghost" emulators sometimes get
+ * left behind, we kill the ADB server
+ */
+function killAdbServer() {
+    util.medicLog("Killing adb server");
+    var killServerCommand = "adb kill-server";
+
+    util.medicLog("Running the following command:");
+    util.medicLog("    " + killServerCommand);
+
+    var killServerResult = shelljs.exec(killServerCommand, {silent: false, async: false});
+    if (killServerResult.code !== 0) {
+        util.fatal("Failed killing adb server");
+    }
+    util.medicLog("Finished killing adb server");
+}
+
 function getKillCommand(taskNames) {
 
     var cli;
@@ -76,11 +94,10 @@ function killTasks(taskNames) {
     util.medicLog("running the following command:");
     util.medicLog("    " + command);
 
-    shelljs.exec(command, {silent: false, async: true}, function (returnCode, output) {
-        if (returnCode !== 0) {
-            console.warn("WARNING: kill command returned " + returnCode);
-        }
-    });
+    var killTasksResult = shelljs.exec(command, {silent: false, async: false });
+    if (killTasksResult.code !== 0) {
+        console.warn("WARNING: kill command returned " + killTasksResult.code);
+    }
 }
 
 function killTasksForPlatform(platform) {
@@ -97,6 +114,10 @@ function killTasksForPlatform(platform) {
 
     // kill them
     killTasks(platformTasks);
+
+    if (platform === util.ANDROID) {
+        killAdbServer();
+    }
 }
 
 // main
