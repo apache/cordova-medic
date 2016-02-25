@@ -423,6 +423,26 @@ function main() {
                     util.fatal("Could not start Android emulator");
                 } else {
                     util.medicLog("Android emulator started");
+
+                    // CB-10699: We try to uninstall the app once the emulator
+                    // boots up, because sometimes the adb command that "cordova
+                    // run" uses fails to uninstall the app and errors out
+
+                    // There needs to be only one device for uninstall to work
+                    var numDevices = util.countAndroidDevices();
+                    if (numDevices != 1) {
+                        util.medicLog("WARNING: There is more than one device/emulator attached, skipping uninstall step");
+                    } else {
+                        var uninstallCommand = "adb uninstall org.apache.mobilespec";
+
+                        util.medicLog("Running the following command:");
+                        util.medicLog("    " + uninstallCommand);
+
+                        // This command will fail if the app is not installed,
+                        // so we set it to silent so as to not confuse anyone
+                        var uninstallResult = shelljs.exec(uninstallCommand, {silent: true, async: false});
+                    }
+
                     runOnEmulator();
                 }
             } else {

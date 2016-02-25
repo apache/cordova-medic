@@ -31,27 +31,15 @@ var path     = require("path");
 var util = require("../lib/util");
 
 // constants
-var DEVICE_ROW_PATTERN = /(emulator|device|host)/m;
-var HEADING_LINE_PATTERN = /List of devices/m;
 var DEFAULT_APP_PATH = "mobilespec";
 
 // helpers
 function logAndroid() {
 
     var logCommand = "adb logcat -d";
-    var listCommand = "adb devices";
-
-    util.medicLog("running:");
-    util.medicLog("    " + listCommand);
 
     // bail out if there is more/less than one device
-    var numDevices = 0;
-    var result = shelljs.exec(listCommand, {silent: false, async: false});
-    result.output.split('\n').forEach(function (line) {
-        if (!HEADING_LINE_PATTERN.test(line) && DEVICE_ROW_PATTERN.test(line)) {
-            numDevices += 1;
-        }
-    });
+    var numDevices = util.countAndroidDevices();
     if (numDevices != 1) {
         util.fatal("there must be exactly one emulator/device attached");
     }
