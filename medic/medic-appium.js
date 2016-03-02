@@ -104,7 +104,6 @@ function parseArgs() {
             .default("output", path.join(__dirname, "../../test_summary.json"))
             .describe("output", "A file that will store test results")
             .describe("plugins", "A space-separated list of plugins to test.")
-            .default("screenshotPath", path.join(__dirname, "appium_screenshots"))
             .describe("screenshotPath", "A directory to save screenshots to, either absolute or relative to the directory containing cordova-medic.")
             .argv;
 
@@ -116,7 +115,15 @@ function parseArgs() {
     options.udid = argv.udid;
     options.device = argv.device;
     options.outputPath = argv.output;
-    options.screenshotPath = path.normalize(argv.screenshotPath);
+    if (argv.screenshotPath) {
+        if (path.isAbsolute(argv.screenshotPath)){
+            options.screenshotPath = path.normalize(argv.screenshotPath);
+        } else {
+            options.screenshotPath = path.join(__dirname, "../..", argv.screenshotPath);
+        }
+    } else {
+        options.screenshotPath = path.join(__dirname, "../../appium_screenshots");
+    }
 
     // accepting both "plugins" or "plugin" arguments
     // if there is none, using default plugin list
