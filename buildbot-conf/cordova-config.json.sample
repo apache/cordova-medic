@@ -12,8 +12,8 @@
     "appium": {
         "androidDeviceName":      "Galaxy_Nexus",
         "androidPlatformVersion": "19",
-        "iosDeviceName":          "iPhone 5",
-        "iosPlatformVersion":     "8.4",
+        "iosDeviceName":          "iPhone 6s",
+        "iosPlatformVersion":     "9.1",
         "timeout":                2400,
         "screenshotPath":         "appium_screenshots"
     },

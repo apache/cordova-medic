@@ -35,18 +35,20 @@
 // Run on Android emulator:
 // node cordova-medic/medic/medic.js appium --platform android --device-name appium --platform-version "21" -app mobilespec
 
-var fs              = require("fs");
-var path            = require("path");
-var util            = require("../lib/util");
-var MedicReporter   = require("../lib/MedicReporter");
-var optimist        = require("optimist");
-var kill            = require("tree-kill");
-var child_process   = require("child_process");
-var wd              = require("wd");
-var et              = require("expect-telnet");
-var shell           = require("shelljs");
-var Jasmine         = require("jasmine");
-var unorm           = require("unorm");
+var fs               = require("fs");
+var path             = require("path");
+var util             = require("../lib/util");
+var MedicReporter    = require("../lib/MedicReporter");
+var wd               = require("wd");
+var wdHelper         = require("../lib/appium/helpers/wdHelper");
+var screenshotHelper = require("../lib/appium/helpers/screenshotHelper");
+var optimist         = require("optimist");
+var kill             = require("tree-kill");
+var child_process    = require("child_process");
+var et               = require("expect-telnet");
+var shell            = require("shelljs");
+var Jasmine          = require("jasmine");
+var unorm            = require("unorm");
 
 var DEFAULT_APP_PATH = "mobilespec";
 var DEFAULT_IOS_DEVICE_NAME = "iPhone 5";
@@ -71,10 +73,17 @@ function getPackagePath(options) {
     case "android":
         return path.join(fullAppPath, "/platforms/android/build/outputs/apk/android-debug.apk");
     case "ios":
-        if (options.device) {
-            return path.join(fullAppPath, "/platforms/ios/build/device/mobilespec.ipa");
+        var searchDir = options.device ?
+            path.join(getFullAppPath(options.appPath), "/platforms/ios/build/device/") :
+            path.join(getFullAppPath(options.appPath), "/platforms/ios/build/emulator/");
+        var fileMask = options.device ? "*.ipa" : "*.app";
+        var files = shell.ls(searchDir + fileMask);
+        util.medicLog("Looking for app package in " + searchDir);
+        if (files && files.length > 0) {
+            util.medicLog("Found app package: " + files[0]);
+            return files[0];
         }
-        return path.join(fullAppPath, "/platforms/ios/build/emulator/mobilespec.app");
+        util.fatal("Could not find the app package");
     }
 }
 
@@ -97,14 +106,15 @@ function parseArgs() {
             .describe("app", "Path to the test app.")
             .default("udid", "")
             .describe("udid", "UDID of the ios device. Only needed when running tests on real iOS devices.")
-            .default("deviceName", null)
-            .describe("deviceName", "Name of the device to run tests on.")
-            .default("platformVersion", null)
+            .demand("deviceName")
+            .describe("deviceName", "Name of the device/avd/simulator to run tests on.")
+            .demand("platformVersion")
             .describe("platformVersion", "Version of the OS installed on the device or the emulator. For example, '21' for Android or '8.1' for iOS.")
             .default("output", path.join(__dirname, "../../test_summary.json"))
             .describe("output", "A file that will store test results")
             .describe("plugins", "A space-separated list of plugins to test.")
             .describe("screenshotPath", "A directory to save screenshots to, either absolute or relative to the directory containing cordova-medic.")
+            .describe("logFile", "A file to output Appium logs to.")
             .argv;
 
     // filling out the options object
@@ -114,7 +124,12 @@ function parseArgs() {
     options.appiumPlatformVersion = argv.platformVersion || DEFAULT_PLATFORM_VERSION;
     options.udid = argv.udid;
     options.device = argv.device;
-    options.outputPath = argv.output;
+    if (argv.output) {
+        options.outputPath = path.normalize(argv.output);
+    }
+    if (argv.logFile) {
+        options.logFile = path.normalize(argv.logFile);
+    }
     if (argv.screenshotPath) {
         if (path.isAbsolute(argv.screenshotPath)){
             options.screenshotPath = path.normalize(argv.screenshotPath);
@@ -137,13 +152,15 @@ function parseArgs() {
 
     // looking for the tests
     options.testPaths = [];
+    var searchPaths = [];
     options.pluginRepos.forEach(function (pluginRepo) {
-        var testPath = path.join(pluginRepo, "appium-tests", options.platform);
-        if (fs.existsSync(testPath)) {
-            util.medicLog("Found tests in: " + testPath);
-            options.testPaths.push(path.join(testPath, "*.spec.js"));
-        } else {
-            util.medicLog("Couldn't find tests in: " + testPath);
+        searchPaths.push(path.join(pluginRepo, "appium-tests", options.platform));
+        searchPaths.push(path.join(pluginRepo, "appium-tests", "common"));
+    });
+    searchPaths.forEach(function (searchPath) {
+        if (fs.existsSync(searchPath)) {
+            util.medicLog("Found tests in: " + searchPath);
+            options.testPaths.push(path.join(searchPath, "*.spec.js"));
         }
     });
 
@@ -176,16 +193,16 @@ function parseArgs() {
 
     // setting up the global variables so the tests could use them
     global.WD = wd;
+    global.WD_HELPER = wdHelper;
+    global.SCREENSHOT_HELPER = screenshotHelper;
     global.ET = et;
     global.SHELL = shell;
     global.DEVICE = options.device;
+    global.PLATFORM = options.platform;
     global.PLATFORM_VERSION = options.appiumPlatformVersion;
     global.DEVICE_NAME = options.appiumDeviceName;
     global.SCREENSHOT_PATH = options.screenshotPath;
-    if (options.platform === "ios") {
-        global.unorm = unorm;
-    }
-    global.PACKAGE_PATH = getPackagePath(options);
+    global.UNORM = unorm;
 
     // creating a directory to save screenshots to
     fs.stat(global.SCREENSHOT_PATH, function (err) {
@@ -197,9 +214,10 @@ function parseArgs() {
     return options;
 }
 
-function getLocalCLI() {
-    if (util.isWindows()) {
-        return "cordova.bat";
+function getLocalCLI(appPath) {
+    if (util.isWindows() || !fs.existsSync(path.join(getFullAppPath(appPath), "./cordova"))) {
+        // fall back to globally installed cordova if the app is not mobilespec
+        return "cordova";
     }
     return "./cordova";
 }
@@ -208,7 +226,7 @@ function getLocalCLI() {
 function prepareApp(options, callback) {
     var fullAppPath = getFullAppPath(options.appPath);
     var deviceString = options.device ? " --device" : "";
-    var buildCommand = getLocalCLI() + " build " + options.platform + deviceString;
+    var buildCommand = getLocalCLI(options.appPath) + " build " + options.platform + deviceString;
 
     // remove medic.json and (re)build
     shell.rm(path.join(fullAppPath, "www", "medic.json"));
@@ -221,6 +239,7 @@ function prepareApp(options, callback) {
                 if (error) {
                     util.fatal("Couldn't build the app: " + error);
                 } else {
+                    global.PACKAGE_PATH = getPackagePath(options);
                     callback();
                 }
             });
@@ -239,7 +258,6 @@ function killProcess(procObj, killSignal, callback) {
     if (procObj.alive) {
         procObj.alive = false;
         setTimeout(function () {
-            util.medicLog("Killing ios proxy...");
             kill(procObj.process.pid, killSignal, callback);
         }, 1000);
     } else {
@@ -386,6 +404,9 @@ function startAppiumServer(options, callback) {
         break;
     default:
         throw new Error("Unsupported platform: " + options.platform);
+    }
+    if (options.logFile) {
+        additionalArgs += " --log " + options.logFile;
     }
 
     appiumServerCommand = "node " + APPIUM_SERVER_PATH +
