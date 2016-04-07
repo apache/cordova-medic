@@ -367,7 +367,7 @@ function startIosProxy(options) {
     };
 
     if (options.platform === "ios" && options.device && options.udid) {
-        iosProxyCommand = "ios_webkit_debug_proxy -c " + options.udid + ":27753";
+        iosProxyCommand = "killall ios_webkit_debug_proxy && ios_webkit_debug_proxy -c " + options.udid + ":27753";
         util.medicLog("Running:");
         util.medicLog(iosProxyCommand);
         iosProxy.alive = true;
