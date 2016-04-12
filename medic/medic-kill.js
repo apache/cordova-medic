@@ -34,7 +34,7 @@ function tasksOnPlatform(platformName) {
         case util.WINDOWS:
             return ["WWAHost.exe", "Xde.exe"];
         case util.IOS:
-            return ["iOS Simulator"];
+            return ["Simulator"];
         case util.ANDROID:
             if (util.isWindows()) {
                 return ["emulator-arm.exe"];
