@@ -320,6 +320,18 @@ function startTests(testPaths, appium, iosProxy) {
     var jasmine = new Jasmine();
     var medicReporter;
 
+    function exitGracefully(e) {
+        killProcess(appium, KILL_SIGNAL, function () {
+            killProcess(iosProxy, KILL_SIGNAL, function () {
+                util.fatal(e.stack);
+            });
+        });
+    }
+
+    process.on("uncaughtException", function(err) {
+        exitGracefully(err);
+    });
+
     util.medicLog("Running tests from:");
     testPaths.forEach(function (testPath) {
         util.medicLog(testPath);
@@ -351,11 +363,7 @@ function startTests(testPaths, appium, iosProxy) {
         // Launch the tests!
         jasmine.execute();
     } catch (e) {
-        killProcess(appium, KILL_SIGNAL, function () {
-            killProcess(iosProxy, KILL_SIGNAL, function () {
-                util.fatal("Error running tests:\n" + e.stack);
-            });
-        });
+        exitGracefully(e);
     }
 }
 
