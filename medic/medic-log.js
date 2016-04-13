@@ -35,8 +35,8 @@ var DEFAULT_APP_PATH = "mobilespec";
 
 // helpers
 function logAndroid() {
-
-    var logCommand = "adb logcat -d";
+    
+    var logCommand = "adb logcat -d -v time";
 
     // bail out if there is more/less than one device
     var numDevices = util.countAndroidDevices();
