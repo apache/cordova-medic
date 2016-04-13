@@ -321,9 +321,12 @@ function startTests(testPaths, appium, iosProxy) {
     var medicReporter;
 
     function exitGracefully(e) {
+        util.medicLog("Uncaught exception! Killing server and exiting in 2 seconds...");
         killProcess(appium, KILL_SIGNAL, function () {
             killProcess(iosProxy, KILL_SIGNAL, function () {
-                util.fatal(e.stack);
+                setTimeout(function () {
+                    util.fatal(e.stack);
+                }, 2000);
             });
         });
     }
