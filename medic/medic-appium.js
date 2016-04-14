@@ -45,10 +45,11 @@ var screenshotHelper = require("../lib/appium/helpers/screenshotHelper");
 var optimist         = require("optimist");
 var kill             = require("tree-kill");
 var child_process    = require("child_process");
-var et               = require("expect-telnet");
+var expectTelnet     = require("expect-telnet");
 var shell            = require("shelljs");
 var Jasmine          = require("jasmine");
 var unorm            = require("unorm");
+var elementTree      = require("elementtree");
 
 var DEFAULT_APP_PATH = "mobilespec";
 var DEFAULT_IOS_DEVICE_NAME = "iPhone 5";
@@ -195,7 +196,7 @@ function parseArgs() {
     global.WD = wd;
     global.WD_HELPER = wdHelper;
     global.SCREENSHOT_HELPER = screenshotHelper;
-    global.ET = et;
+    global.ET = expectTelnet;
     global.SHELL = shell;
     global.DEVICE = options.device;
     global.PLATFORM = options.platform;
@@ -222,6 +223,39 @@ function getLocalCLI(appPath) {
     return "./cordova";
 }
 
+function getConfigPath(appPath) {
+    return path.join(appPath, "config.xml");
+}
+
+function parseElementtreeSync(filename) {
+    var contents = fs.readFileSync(filename, util.DEFAULT_ENCODING);
+    if (!contents) {
+        util.fatal("The config file is empty: " + filename);
+    }
+    // Skip the Byte Order Mark (BOM)
+    contents = contents.substring(contents.indexOf("<"));
+
+    return new elementTree.ElementTree(elementTree.XML(contents));
+}
+
+function setPreference(appPath, preference, value) {
+    var configFile = getConfigPath(appPath);
+    var xml = parseElementtreeSync(configFile);
+    var pref = xml.find("preference[@name=\"" + preference + "\"]");
+
+    util.medicLog("Setting \"" + preference + "\" preference to \"" + value + "\"");
+
+    if (!pref) {
+        pref = new elementTree.Element("preference");
+        pref.attrib.name = preference;
+        xml.getroot().append(pref);
+    }
+    pref.attrib.value = value;
+
+    // write the changes
+    fs.writeFileSync(configFile, xml.write({indent: 4}), util.DEFAULT_ENCODING);
+}
+
 // remove medic.json and rebuild the app
 function prepareApp(options, callback) {
     var fullAppPath = getFullAppPath(options.appPath);
@@ -233,17 +267,19 @@ function prepareApp(options, callback) {
     fs.stat(fullAppPath, function (error, stats) {
         if (error || !stats.isDirectory()) {
             util.fatal("The app directory doesn't exist: " + fullAppPath);
-        } else {
-            util.medicLog("Building the app...");
-            child_process.exec(buildCommand, { cwd: fullAppPath, maxBuffer: SMALL_BUFFER_SIZE }, function (error) {
-                if (error) {
-                    util.fatal("Couldn't build the app: " + error);
-                } else {
-                    global.PACKAGE_PATH = getPackagePath(options);
-                    callback();
-                }
-            });
         }
+        if (options.platform === "ios") {
+            setPreference(fullAppPath, "CameraUsesGeolocation", "true");
+        }
+        util.medicLog("Building the app...");
+        child_process.exec(buildCommand, { cwd: fullAppPath, maxBuffer: SMALL_BUFFER_SIZE }, function (error) {
+            if (error) {
+                util.fatal("Couldn't build the app: " + error);
+            } else {
+                global.PACKAGE_PATH = getPackagePath(options);
+                callback();
+            }
+        });
     });
 }
 
