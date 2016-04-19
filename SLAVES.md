@@ -49,12 +49,6 @@ To make the Android commands available on the command line, set the following en
 - `ANDROID_HOME`, equal to the absolute path to the Android SDK directory
 - `PATH`, extended to contain `ANDROID_HOME/tools` and `ANDROID_HOME/platform_tools`
 
-To run Appium tests, you may also need to download the [latest chromedriver][chromedriver] and set the following environment variable:
-
-- `CHROMEDRIVER_EXECUTABLE`, equal to the absolute path to the chromedriver executable
-
-This is needed to avoid the bug in older chromedriver versions that was preventing Appium tests to switch contexts. There are a bunch of github issues created for this bug in Appium project: [1][appium_bug_1], [2][appium_bug_2], [3][appium_bug_3].
-
 #### SDK
 
 Once the SDK base is installed, actual tools and libraries can be installed by running:
@@ -105,9 +99,5 @@ There is an installation of Buildbot running on Apache Infrastructure, which can
 [infra_jira]:   https://www.apache.org/dev/infra-contact
 [infra_svn]:    https://svn.apache.org/repos/infra/infrastructure/buildbot/aegis/buildmaster/master1/
 [ant]:          http://ant.apache.org/manual/install.html
-[appium_bug_1]: https://github.com/appium/appium/issues/4429
-[appium_bug_2]: https://github.com/appium/appium/issues/5526
-[appium_bug_3]: https://github.com/appium/appium/issues/5616
-[chromedriver]: https://sites.google.com/a/chromium.org/chromedriver/downloads
 [appium_docs]:  https://github.com/appium/appium/blob/master/docs/en/advanced-concepts/ios-webkit-debug-proxy.md
 [brew]:         http://brew.sh/

@@ -10,6 +10,8 @@ This repository contains Buildbot configuration and automation tools for setting
 - Windows Universal Apps (Windows 8.0, Windows 8.1, Windows Phone 8.1)
 - Windows Phone 8
 
+It also contains a runner script to run Appium tests designed for Cordova core plugins. To run only Appium tests, please refer to [APPIUM.md](APPIUM.md).
+
 # Prerequisites
 
 ## CouchDB
