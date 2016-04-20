@@ -9,8 +9,9 @@ var path = require('path'),
 var SERVER = "https://ci.apache.org";
 var BUILDERS = ["cordova-windows-store8.1", "cordova-ios", "cordova-windows-phone8.1", "cordova-android-osx","cordova-android-win"];
 var STEPS = ["running-tests", "gathering-logs", "getting-test-results"];
+var SECONDS_IN_DAY = 86400;
 
-function downloadLogs(outputDir) {
+function downloadLogs(outputDir, n) {
     var counter = 0;
     var builderPromises = BUILDERS.map(function(builder) {
         var buildInfoFile = path.join(outputDir, builder + ".json");
@@ -21,6 +22,13 @@ function downloadLogs(outputDir) {
             var buildInfo = JSON.parse(fs.readFileSync(buildInfoFile));
             var promises = [];
             for(var buildNumber in buildInfo) {
+                // if build is too old - skip it.
+                if (buildInfo[buildNumber].steps.length > 0 && buildInfo[buildNumber].steps[0].times.length > 0) {
+                    var daysSinceBuidStart = ((Date.now() / 1000) - buildInfo[buildNumber].steps[0].times[0]) / ( SECONDS_IN_DAY);
+                    if (daysSinceBuidStart > n) {
+                        continue;
+                    }
+                }
                 // find all the build steps that have logs 
                 var steps = buildInfo[buildNumber].steps.filter(function (step) {
                         return STEPS.indexOf(step.name) !== -1 && step.logs && step.logs.length > 0;
@@ -73,11 +81,14 @@ function download(url, filename){
 function main() {
     // get args
     var argv = optimist
-        .usage("Usage: $0 --outpdir {path}")
+        .usage("Usage: $0 --outpdir {path} --n {days}")
         .default("outputDir", ".")
+        .default("n", 2000)
+        .describe("outputDir", "Path to directory where to place logs")
+        .describe("n", "Download logs for last n days")
         .argv;
         
     mkdirp.sync(argv.outputDir);
-    downloadLogs(argv.outputDir);
+    downloadLogs(argv.outputDir, argv.n);
 }
 main();
