@@ -88,8 +88,8 @@ function getPackagePath(options) {
     }
 }
 
-function getLocalPluginDirs() {
-    return shell.ls("cordova-plugin-*");
+function getPluginDirs(appPath) {
+    return shell.ls(path.join(appPath, "/plugins/cordova-plugin-*"));
 }
 
 function parseArgs() {
@@ -143,12 +143,15 @@ function parseArgs() {
 
     // accepting both "plugins" or "plugin" arguments
     // if there is none, using default plugin list
+    if (argv.plugin) {
+        argv.plugins = argv.plugin;
+    }
     if (argv.plugins) {
-        options.pluginRepos = argv.plugins.split(" ");
-    } else if (argv.plugin) {
-        options.pluginRepos = argv.plugin.split(" ");
+        options.pluginRepos = argv.plugins.split(" ").map(function (pluginName) {
+            return path.join(options.appPath, "plugins", pluginName);
+        });
     } else {
-        options.pluginRepos = getLocalPluginDirs();
+        options.pluginRepos = getPluginDirs(options.appPath);
     }
 
     // looking for the tests
