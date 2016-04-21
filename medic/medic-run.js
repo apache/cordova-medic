@@ -50,7 +50,7 @@ var SERVER_RESPONSE_TIMEOUT   = 15000; // in milliseconds
 var MAX_NUMBER_OF_TRIES       = 3;
 var WAIT_TIME_TO_RETRY_CONNECTION  = 15000; // in milliseconds
 
-// Used to grant appropriate iOS permissions 
+// Used to grant appropriate iOS permissions
 var IOS_APPS_TO_GRANT_PERMISSIONS = ['kTCCServiceAddressBook'];
 var IOS_SIM_FOLDER = "/Users/buildbot/Library/Developer/CoreSimulator/Devices/";
 var IOS_TCC_DB_FOLDER = "/Users/buildbot/Library/Application\ Support/com.apple.TCC/";
@@ -251,27 +251,19 @@ function windowsSpecificPreparation(argv) {
 
 function iOSSpecificPreparation(argv) {
     var extraArgs = "";
-    
+
     util.medicLog("Granting iOS permissions: ");
-    
+
     var appName = argv.app;
     var simulatorsFolder = argv.simulatorsFolder;
     var tccDbPath = argv.tccDbPath;
-    
+
     if(appName && simulatorsFolder && tccDbPath) {
         var medicPerms = new MedicIOSPermissions(appName, simulatorsFolder, tccDbPath);
         medicPerms.updatePermissions(IOS_APPS_TO_GRANT_PERMISSIONS);
     }
-    
-    return extraArgs;
-}
 
-function getLocalCLI() {
-    if (util.isWindows()) {
-        return "cordova.bat";
-    } else {
-        return "./cordova";
-    }
+    return extraArgs;
 }
 
 function cordovaReturnedError(returnCode, output) {
@@ -367,7 +359,7 @@ function main() {
 
     var workingDir = process.cwd();
 
-    var cli = getLocalCLI();
+    var cli = util.getLocalCLI();
 
     // check that the app exists
     if (!fs.existsSync(appPath)) {
