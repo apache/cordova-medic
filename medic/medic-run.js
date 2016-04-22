@@ -33,7 +33,6 @@ var request  = require("request");
 
 var util     = require("../lib/util");
 var testwait = require("../lib/testwait");
-var MedicIOSPermissions = require("../lib/medicIOSPermissions");
 
 // constants
 var CORDOVA_MEDIC_DIR         = "cordova-medic";
@@ -49,11 +48,6 @@ var DEFAULT_TIMEOUT           = 600; // in seconds
 var SERVER_RESPONSE_TIMEOUT   = 15000; // in milliseconds
 var MAX_NUMBER_OF_TRIES       = 3;
 var WAIT_TIME_TO_RETRY_CONNECTION  = 15000; // in milliseconds
-
-// Used to grant appropriate iOS permissions
-var IOS_APPS_TO_GRANT_PERMISSIONS = ['kTCCServiceAddressBook'];
-var IOS_SIM_FOLDER = "/Users/buildbot/Library/Developer/CoreSimulator/Devices/";
-var IOS_TCC_DB_FOLDER = "/Users/buildbot/Library/Application\ Support/com.apple.TCC/";
 
 // helpers
 function currentMillisecond() {
@@ -249,21 +243,12 @@ function windowsSpecificPreparation(argv) {
     return extraArgs;
 }
 
-function iOSSpecificPreparation(argv) {
-    var extraArgs = "";
-
-    util.medicLog("Granting iOS permissions: ");
-
-    var appName = argv.app;
-    var simulatorsFolder = argv.simulatorsFolder;
-    var tccDbPath = argv.tccDbPath;
-
-    if(appName && simulatorsFolder && tccDbPath) {
-        var medicPerms = new MedicIOSPermissions(appName, simulatorsFolder, tccDbPath);
-        medicPerms.updatePermissions(IOS_APPS_TO_GRANT_PERMISSIONS);
+function getLocalCLI() {
+    if (util.isWindows()) {
+        return "cordova.bat";
+    } else {
+        return "./cordova";
     }
-
-    return extraArgs;
 }
 
 function cordovaReturnedError(returnCode, output) {
@@ -346,8 +331,6 @@ function main() {
         .default("app", DEFAULT_APP_PATH)
         .default("timeout", DEFAULT_TIMEOUT).describe("timeout", "timeout in seconds")
         .default("winvers", DEFAULT_WINDOWS_VERSION).describe("winvers", "[" + WINDOWS_VERSION_CHOICES.join("|") + "]")
-        .default("simulatorsFolder", IOS_SIM_FOLDER)
-        .default("tccDbPath", IOS_TCC_DB_FOLDER)
         .argv;
 
     var platform   = argv.platform;
@@ -359,7 +342,7 @@ function main() {
 
     var workingDir = process.cwd();
 
-    var cli = util.getLocalCLI();
+    var cli = getLocalCLI();
 
     // check that the app exists
     if (!fs.existsSync(appPath)) {
@@ -380,11 +363,6 @@ function main() {
             platformArgs = androidSpecificPreparation(argv);
         } else if (platform === util.WINDOWS) {
             platformArgs = windowsSpecificPreparation(argv);
-        } else if (platform === util.IOS) {
-            // Note: (hack) we need to be in a cordova project before we can run iOS specific preparations
-            shelljs.pushd(appPath);
-            platformArgs = iOSSpecificPreparation(argv);
-            shelljs.popd(appPath);
         }
 
         // enter the app directory
