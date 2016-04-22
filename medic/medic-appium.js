@@ -57,8 +57,6 @@ var DEFAULT_ANDROID_DEVICE_NAME = "appium";
 var DEFAULT_IOS_PLATFORM_VERSION = "7.1";
 var DEFAULT_ANDROID_PLATFORM_VERSION = "19";
 var KILL_SIGNAL = "SIGINT";
-var APPIUM_IP_ADDRESS = "127.0.0.1";
-var APPIUM_PORT = 4723;
 var SMALL_BUFFER_SIZE = 1024 * 1024;
 var BIG_BUFFER_SIZE = 50 * 1024 * 1024;
 var APPIUM_SERVER_PATH = path.normalize("cordova-medic/node_modules/appium/build/lib/main.js");
@@ -207,6 +205,7 @@ function parseArgs() {
     global.DEVICE_NAME = options.appiumDeviceName;
     global.SCREENSHOT_PATH = options.screenshotPath;
     global.UNORM = unorm;
+    global.UDID = options.udid;
 
     // creating a directory to save screenshots to
     fs.stat(global.SCREENSHOT_PATH, function (err) {
@@ -460,12 +459,6 @@ function startAppiumServer(options, callback) {
     }
 
     appiumServerCommand = "node " + APPIUM_SERVER_PATH +
-        " --address " + APPIUM_IP_ADDRESS +
-        " --port " + APPIUM_PORT +
-        " --platform-name " + appiumPlatformName +
-        " --platform-version " + options.appiumPlatformVersion +
-        " --automation-name Appium --log-no-color" +
-        " --device-name \"" + options.appiumDeviceName + "\"" +
         additionalArgs;
 
     // run the Appium server
