@@ -240,6 +240,41 @@ function parseElementtreeSync(filename) {
     return new elementTree.ElementTree(elementTree.XML(contents));
 }
 
+function addCspSource(appPath, directive, source) {
+    var cspInclFile = path.join(appPath, "www/csp-incl.js");
+    var indexFile = path.join(appPath, "www/index.html");
+    var cspFile = fs.existsSync(cspInclFile) ? cspInclFile : indexFile;
+    var cspContent = fs.readFileSync(cspFile, util.DEFAULT_ENCODING);
+    var cspTagOpening = "<meta http-equiv=\"Content-Security-Policy\" content=\"";
+    var cspRule = directive + " " + source;
+    var cspRuleReg = new RegExp(directive + "[^;\"]+" + source.replace("*", "\\*"));
+
+    util.medicLog("Adding CSP source \"" + source + "\" to directive \"" + directive + "\"");
+
+    if (cspContent.match(cspRuleReg)) {
+        util.medicLog("It's already there.");
+    } else if (util.contains(cspContent, directive)) {
+        // if the directive is there, just add the source to it
+        cspContent = cspContent.replace(directive, cspRule);
+        fs.writeFileSync(cspFile, cspContent, util.DEFAULT_ENCODING);
+    } else if (cspContent.match(/content=".*?default-src.+?"/)) {
+        // needed directive is not there but there is default-src directive
+        // creating needed directive and copying default-src sources to it
+        var defaultSrcReg = /(content=".*?default-src)(.+?);/;
+        cspContent = cspContent.replace(defaultSrcReg, "$1$2; " + cspRule + "$2;");
+        fs.writeFileSync(cspFile, cspContent, util.DEFAULT_ENCODING);
+    } else if (util.contains(cspContent, cspTagOpening)) {
+        // needed directive is not there and there is no default-src directive
+        // but the CSP tag is till present
+        // just adding needed directive to a start of CSP tag content
+        cspContent = cspContent.replace(cspTagOpening, cspTagOpening + directive + " " + source + "; ");
+        fs.writeFileSync(cspFile, cspContent, util.DEFAULT_ENCODING);
+    } else {
+        // no CSP tag, skipping
+        util.medicLog("WARNING: No CSP tag found.");
+    }
+}
+
 function setPreference(appPath, preference, value) {
     var configFile = getConfigPath(appPath);
     var xml = parseElementtreeSync(configFile);
@@ -267,12 +302,18 @@ function prepareApp(options, callback) {
     // remove medic.json and (re)build
     shell.rm(path.join(fullAppPath, "www", "medic.json"));
     fs.stat(fullAppPath, function (error, stats) {
+        // check if the app exists
         if (error || !stats.isDirectory()) {
             util.fatal("The app directory doesn't exist: " + fullAppPath);
         }
+
+        // set properties/CSP rules
         if (options.platform === "ios") {
             setPreference(fullAppPath, "CameraUsesGeolocation", "true");
         }
+        addCspSource(fullAppPath, "connect-src", "http://*");
+
+        // rebuild the app
         util.medicLog("Building the app...");
         child_process.exec(buildCommand, { cwd: fullAppPath, maxBuffer: SMALL_BUFFER_SIZE }, function (error) {
             if (error) {
