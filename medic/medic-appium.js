@@ -290,6 +290,7 @@ function isFailFastError(error) {
         return error.message.indexOf("Could not find a connected") > -1 ||
             error.message.indexOf("Bad app") > -1;
     }
+    return false;
 }
 
 function killProcess(procObj, killSignal, callback) {
@@ -353,8 +354,22 @@ function summarizeAndSaveResults(results, outputPath, callback) {
     });
 }
 
+function allDoneCallback(appium, iosProxy, results) {
+    killProcess(appium, KILL_SIGNAL, function () {
+        killProcess(iosProxy, KILL_SIGNAL, function () {
+            var exitCode;
+            if (!results) {
+                exitCode = 1;
+            } else {
+                exitCode = results.failed === 0 ? 0 : 1;
+            }
+            util.medicLog("Exiting with exit code " + exitCode);
+            process.exit(exitCode);
+        });
+    });
+}
+
 function startTests(testPaths, appium, iosProxy) {
-    var exitCode = 1;
     var jasmine = new Jasmine();
     var medicReporter;
 
@@ -383,17 +398,9 @@ function startTests(testPaths, appium, iosProxy) {
         spec_files: testPaths
     });
 
-    function allDoneCallback(results) {
-        killProcess(appium, KILL_SIGNAL, function () {
-            killProcess(iosProxy, KILL_SIGNAL, function () {
-                exitCode = results.failed === 0 ? 0 : 1;
-                util.medicLog("Exiting with exit code " + exitCode);
-                process.exit(exitCode);
-            });
-        });
-    }
-
-    medicReporter = new MedicReporter(allDoneCallback);
+    medicReporter = new MedicReporter(function (results) {
+        allDoneCallback(appium, iosProxy, results);
+    });
 
     // don't use default reporter, it exits the process before
     // we would get the chance to kill appium server
@@ -428,7 +435,7 @@ function startIosProxy(options) {
     return iosProxy;
 }
 
-function startAppiumServer(options, callback) {
+function startAppiumServer(options, iosProxy, callback) {
     var appiumPlatformName;
     var appiumServerCommand;
     var additionalArgs = "";
@@ -470,7 +477,10 @@ function startAppiumServer(options, callback) {
         if (appium.alive && error) {
             util.medicLog("Error running appium server: " + error);
             if (isFailFastError(error)) {
-                process.exit(1);
+                allDoneCallback(appium, iosProxy);
+            } else {
+                util.medicLog("Another instance already running? Will try to run tests on it.");
+                callback(appium);
             }
         }
         appium.alive = false;
@@ -489,7 +499,7 @@ function main() {
 
     prepareApp(options, function () {
         var iosProxy = startIosProxy(options);
-        startAppiumServer(options, function (appium) {
+        startAppiumServer(options, iosProxy, function (appium) {
             startTests(options.testPaths, appium, iosProxy);
         });
     });
