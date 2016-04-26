@@ -7,7 +7,7 @@ var path = require('path'),
     util = require('util');
 
 var SERVER = "https://ci.apache.org";
-var BUILDERS = ["cordova-windows-store8.1", "cordova-ios", "cordova-windows-phone8.1", "cordova-android-osx","cordova-android-win"];
+var BUILDERS = ["cordova-windows-store8.1", "cordova-ios", "cordova-windows-phone8.1", "cordova-android-osx"];
 var STEPS = ["running-tests", "gathering-logs", "getting-test-results"];
 var SECONDS_IN_DAY = 86400;
 
