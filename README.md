@@ -6,7 +6,7 @@ Cordova Medic
 This repository contains Buildbot configuration and automation tools for setting up a continuous integration system for Apache Cordova. It currently supports builds on the following platforms:
 
 - iOS
-- Android (Windows and OS X)
+- Android (OS X)
 - Windows Universal Apps (Windows 8.0, Windows 8.1, Windows Phone 8.1)
 - Windows Phone 8
 
