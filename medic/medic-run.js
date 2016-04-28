@@ -254,7 +254,7 @@ function iOSSpecificPreparation(argv) {
 
     util.medicLog("Granting iOS permissions: ");
 
-    var appName = argv.app;
+    var appName = 'org.apache.mobilespec';
     var simulatorsFolder = argv.simulatorsFolder;
     var tccDbPath = argv.tccDbPath;
 
