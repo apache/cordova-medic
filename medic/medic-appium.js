@@ -293,6 +293,23 @@ function setPreference(appPath, preference, value) {
     fs.writeFileSync(configFile, xml.write({indent: 4}), util.DEFAULT_ENCODING);
 }
 
+function permitAccess(appPath, origin) {
+    var configFile = getConfigPath(appPath);
+    var xml = parseElementtreeSync(configFile);
+    var rule = xml.find("access[@origin=\"" + origin + "\"]");
+
+    util.medicLog("Adding a whitelist 'access' rule for origin: " + origin);
+
+    if (rule) {
+        util.medicLog("It is already in place");
+    } else {
+        rule = new elementTree.Element("access");
+        rule.attrib.origin = origin;
+        xml.getroot().append(rule);
+        fs.writeFileSync(configFile, xml.write({indent: 4}), util.DEFAULT_ENCODING);
+    }
+}
+
 // remove medic.json and rebuild the app
 function prepareApp(options, callback) {
     var fullAppPath = getFullAppPath(options.appPath);
@@ -312,6 +329,7 @@ function prepareApp(options, callback) {
             setPreference(fullAppPath, "CameraUsesGeolocation", "true");
         }
         addCspSource(fullAppPath, "connect-src", "http://*");
+        permitAccess(fullAppPath, "*");
 
         // rebuild the app
         util.medicLog("Building the app...");
