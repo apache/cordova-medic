@@ -1,0 +1,5 @@
+{
+    "platform": "android",
+    "action": "run",
+    "cleanUpAfterRun": true
+}

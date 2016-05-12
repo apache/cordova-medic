@@ -1,0 +1,7 @@
+{
+    "platform": "windows",
+    "action": "run",
+    "args": "-- --appx=8.1-phone",
+    "cleanUpAfterRun": true,
+    "logMins": 15
+}
