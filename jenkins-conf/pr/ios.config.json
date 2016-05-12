@@ -1,0 +1,5 @@
+{
+    "platform": "ios",
+    "action": "run",
+    "cleanUpAfterRun": true
+}

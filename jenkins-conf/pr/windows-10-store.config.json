@@ -1,0 +1,7 @@
+{
+    "platform": "windows",
+    "action": "run",
+    "args": " -- --appx=uap",
+    "cleanUpAfterRun": true,
+    "logMins": 15
+}

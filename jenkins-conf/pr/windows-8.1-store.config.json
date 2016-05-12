@@ -1,0 +1,7 @@
+{
+    "platform": "windows",
+    "action": "run",
+    "args": "-- --appx=8.1-win",
+    "cleanUpAfterRun": true,
+    "logMins": 15
+}
