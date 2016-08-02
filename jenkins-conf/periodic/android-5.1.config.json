@@ -1,0 +1,6 @@
+{
+    "platform": "android@https://github.com/apache/cordova-android.git",
+    "action": "run",
+    "cleanUpAfterRun": true,
+    "saucePlatformVersion": "5.1"
+}

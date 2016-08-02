@@ -1,0 +1,6 @@
+{
+    "platform": "android",
+    "action": "run",
+    "cleanUpAfterRun": true,
+    "saucePlatformVersion": "5.1"
+}
