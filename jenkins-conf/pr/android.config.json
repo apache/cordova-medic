@@ -1,5 +1,6 @@
 {
     "platform": "android",
     "action": "run",
-    "cleanUpAfterRun": true
+    "cleanUpAfterRun": true,
+    "verbose": true
 }

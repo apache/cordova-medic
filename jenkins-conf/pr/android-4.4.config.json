@@ -2,5 +2,6 @@
     "platform": "android",
     "action": "run",
     "cleanUpAfterRun": true,
-    "saucePlatformVersion": "4.4"
+    "saucePlatformVersion": "4.4",
+    "verbose": true
 }

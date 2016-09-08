@@ -3,5 +3,6 @@
     "action": "run",
     "args": "-- --appx=8.1-win",
     "cleanUpAfterRun": true,
-    "logMins": 15
+    "logMins": 15,
+    "verbose": true
 }
