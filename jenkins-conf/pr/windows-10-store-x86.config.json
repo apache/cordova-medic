@@ -1,0 +1,8 @@
+{
+    "platform": "windows",
+    "action": "run",
+    "args": " -- --appx=uap --archs=x86",
+    "cleanUpAfterRun": true,
+    "logMins": 15,
+    "verbose": true
+}
