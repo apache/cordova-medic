@@ -1,0 +1,8 @@
+{
+    "platform": "windows@https://github.com/apache/cordova-windows.git",
+    "action": "run",
+    "args": "-- --appx=8.1-phone",
+    "cleanUpAfterRun": true,
+    "logMins": 15,
+    "verbose": true
+}
