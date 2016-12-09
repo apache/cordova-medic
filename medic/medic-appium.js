@@ -104,25 +104,28 @@ function parseArgs() {
             .default("app", DEFAULT_APP_PATH)
             .describe("app", "Path to the test app.")
             .default("udid", "")
-            .describe("udid", "UDID of the ios device. Only needed when running tests on real iOS devices.")
+            .describe("udid", "UDID of the iOS device. Only needed when running tests on real iOS devices.")
             .demand("deviceName")
-            .describe("deviceName", "Name of the device/avd/simulator to run tests on.")
+            .describe("deviceName", "Selenium desired capability specifying which device to target. Common values are: iPhone Simulator, Android Emulator. Full list: http://appium.io/slate/en/v1.6.0/?ruby#appium-server-capabilities")
             .demand("platformVersion")
-            .describe("platformVersion", "Version of the OS installed on the device or the emulator. For example, '21' for Android or '8.1' for iOS.")
+            .describe("platformVersion", "Version of the OS installed on the device or the emulator. For example, '6.0' for Android or '9.3' for iOS.")
             .default("output", path.join(__dirname, "../../test_summary.json"))
             .describe("output", "A file that will store test results")
             .describe("plugins", "A space-separated list of plugins to test.")
             .describe("screenshotPath", "A directory to save screenshots to, either absolute or relative to the directory containing cordova-medic.")
             .describe("logFile", "A file to output Appium logs to.")
+            .default("verbose", false)
+            .describe("verbose", "Dump appium output to stdout.")
             .argv;
 
     // filling out the options object
     options.platform = argv.platform.toLowerCase();
     options.appPath  = argv.app;
     options.appiumDeviceName = argv.deviceName || DEFAULT_DEVICE_NAME;
-    options.appiumPlatformVersion = argv.platformVersion || DEFAULT_PLATFORM_VERSION;
+    options.appiumPlatformVersion = (argv.platformVersion + '') || DEFAULT_PLATFORM_VERSION;
     options.udid = argv.udid;
     options.device = argv.device;
+    options.verbose = argv.verbose;
     if (argv.output) {
         options.outputPath = path.normalize(argv.output);
     }
@@ -355,9 +358,8 @@ function isFailFastError(error) {
 function killProcess(procObj, killSignal, callback) {
     if (procObj.alive) {
         procObj.alive = false;
-        setTimeout(function () {
-            kill(procObj.process.pid, killSignal, callback);
-        }, 1000);
+        util.medicLog('Killing process ' + procObj.process.pid);
+        kill(procObj.process.pid, killSignal, callback);
     } else {
         callback();
     }
@@ -415,7 +417,9 @@ function summarizeAndSaveResults(results, outputPath, callback) {
 
 function allDoneCallback(appium, iosProxy, results) {
     killProcess(appium, KILL_SIGNAL, function () {
+        util.medicLog('Appium process killed.');
         killProcess(iosProxy, KILL_SIGNAL, function () {
+            util.medicLog('iOS Proxy process killed.');
             var exitCode;
             if (!results) {
                 exitCode = 1;
@@ -432,15 +436,16 @@ function startTests(testPaths, appium, iosProxy) {
     var jasmine = new Jasmine();
     var medicReporter;
 
-    function exitGracefully(e) {
-        util.medicLog("Uncaught exception! Killing server and exiting in 2 seconds...");
+    function killChildProcesses(e) {
         killProcess(appium, KILL_SIGNAL, function () {
             killProcess(iosProxy, KILL_SIGNAL, function () {
-                setTimeout(function () {
-                    util.fatal(e.stack);
-                }, 2000);
+                if (e) util.fatal(e.stack);
             });
         });
+    }
+    function exitGracefully(e) {
+        util.medicLog("Uncaught exception! Killing server and exiting in 2 seconds...");
+        killChildProcesses(e);
     }
 
     process.on("uncaughtException", function(err) {
@@ -471,7 +476,7 @@ function startTests(testPaths, appium, iosProxy) {
         jasmine.execute();
     } catch (e) {
         exitGracefully(e);
-    }
+    } 
 }
 
 function startIosProxy(options) {
@@ -507,9 +512,6 @@ function startAppiumServer(options, iosProxy, callback) {
     switch (options.platform) {
     case "android":
         appiumPlatformName = "Android";
-        if (!options.device) {
-            additionalArgs += " --avd " + options.appiumDeviceName;
-        }
         break;
     case "ios":
         appiumPlatformName = "iOS";
@@ -547,10 +549,18 @@ function startAppiumServer(options, iosProxy, callback) {
 
     // Wait for the Appium server to start up
     appium.process.stdout.on("data", function (data) {
+        if (options.verbose) {
+            util.medicLog('Appium stdout: ' + data);
+        }
         if (data.indexOf("Appium REST http interface listener started") > -1) {
             callback(appium);
         }
     });
+    if (options.verbose) {
+        appium.process.stderr.on("data", function (data) {
+            util.medicLog('Appium stderr: ' + data);
+        });
+    }
 }
 
 function main() {
