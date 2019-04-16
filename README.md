@@ -1,6 +1,16 @@
 Cordova Medic
 =============
 
+---
+📌 **Deprecation Notice**
+
+This repository is deprecated and no more work will be done on this by Apache Cordova. You can continue to use this and it should work as-is but any future issues will not be fixed by the Cordova community.
+
+Feel free to fork this repository and improve your fork. Existing forks are listed in [Network](../../network) and [Forks](../../network/members).
+
+- Learn more: https://github.com/apache/cordova/blob/master/deprecated.md#deprecated-tooling
+---
+
 # Description
 
 This repository contains Buildbot configuration and automation tools for setting up a continuous integration system for Apache Cordova. It currently supports builds on the following platforms:
